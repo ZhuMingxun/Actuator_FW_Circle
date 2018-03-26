@@ -69,6 +69,85 @@ void LocalMode_Init()
     PWM_Update();
 }
 
+
+u8 KeyScan(u8 key)
+{
+	u8 reval = 0;
+	
+	switch(key)
+	{
+		case KEY_LOCAL:
+		{
+			if(LOCAL == LOCAL_ON && LOCAL_STOP != LOCAL_STOP_ON)
+			{
+				delay_ms(SCAN_DELAY_MS);
+				if(LOCAL == LOCAL_ON && LOCAL_STOP != LOCAL_STOP_ON)
+					reval = 1;
+				
+			}
+			break;
+		}
+		
+		case KEY_STOP:
+		{
+			if(LOCAL_STOP == LOCAL_STOP_ON && LOCAL != LOCAL_ON)
+			{
+				delay_ms(SCAN_DELAY_MS);
+				if(LOCAL_STOP == LOCAL_STOP_ON && LOCAL != LOCAL_ON)
+					reval = 1;
+				
+			}
+			break;
+		}
+		
+		case KEY_REMOTE:
+		{
+			if(LOCAL != LOCAL_ON && LOCAL_STOP != LOCAL_STOP_ON)
+			{
+				delay_ms(SCAN_RMTDELAY_MS);
+				if(LOCAL != LOCAL_ON && LOCAL_STOP != LOCAL_STOP_ON)
+					reval = 1;
+				
+			}
+			
+			break;
+		}
+		
+		case KEY_OPEN:
+		{
+			if(LOCAL_OPEN == LOCAL_OPEN_ON && LOCAL_CLOSE != LOCAL_CLOSE_ON)
+			{
+				delay_ms(SCAN_DELAY_MS);
+				if(LOCAL_OPEN == LOCAL_OPEN_ON && LOCAL_CLOSE != LOCAL_CLOSE_ON)
+					reval = 1;
+				
+			}
+			break;
+		}
+		
+		case KEY_CLOSE:
+		{
+			if(LOCAL_CLOSE == LOCAL_CLOSE_ON && LOCAL_OPEN != LOCAL_OPEN_ON)
+			{
+				delay_ms(SCAN_DELAY_MS);
+				if(LOCAL_CLOSE == LOCAL_CLOSE_ON && LOCAL_OPEN != LOCAL_OPEN_ON)
+					reval = 1;
+				
+			}
+			break;	
+		}	
+		
+		default:break;
+
+	}
+	return reval;
+	
+	
+}
+
+
+
+
 void Local_Mode()
 { 
     LocalMode_Init();
@@ -95,12 +174,7 @@ void Local_Mode()
             Acquire_Data();
 					  CloseDir_Protect();
 					  Local_Control();
-//						printf("encoder-val_orj:%d ",pData_ADC->adcvalue_encoder);
-//						printf("encoder-val_filt:%f ",pData_ADC->adcvalue_encoder_filtered);
-					  
-//					printf("opening:%f L:%d,H:%d ",pData_Acquire->opening,pSystemParam->adcvalue_valvelow,pSystemParam->adcvalue_valvehigh);
-//					  printf("  systemparam-close_dir:%d ",(int)pSystemParam->close_dir);
-//					  printf(" -Local- \r\n");
+				  printf(" -Local- \r\n");
         }
        
         
@@ -300,7 +374,7 @@ void DefZero_Mode()
             timer2_20ms_flag = 0;
             Acquire_Data();
 			CloseDir_Zero_Detect();
-            DebugPrintf();
+
         }
         
         if(timer2_60ms_flag == 1)
@@ -606,6 +680,88 @@ void SetSen_Mode()
 
     }
       
+}
+
+void SetInputLow_Mode()
+{
+	u8 samp_cnt = 0;
+	u16 read_value;
+	while(mode==MODE_SETINPUT_LOW)
+	{
+//        #ifdef WATCH_DOG
+//        WDT_CONTR = WATCH_DOG_RSTVAL;
+//        #endif
+        
+        if(timer2_20ms_flag==1)
+        {
+            timer2_20ms_flag = 0;
+			samp_cnt++;
+            Update_InputCurrent();
+			
+			if(samp_cnt>50)
+			{
+				samp_cnt = samp_cnt;
+				pSystemParam->setinput_low = (u16)pData_ADC->adcvalue_input_filtered;
+				IapWrite_SetInputLow(pSystemParam->setinput_low);
+				read_value = IapRead_SetInputLow();
+				mode = MODE_DISTANT_ANALOG;
+				printf("\r\n setinput_low:%d",pSystemParam->setinput_low);
+				printf("\r\n read_value_low:%d",read_value);
+				break;
+				
+			}
+        }
+		
+        if(timer2_100ms_flag == 1)
+        {
+            timer2_100ms_flag = 0;
+			Set_InputLow_DIS();
+        } 
+	
+	}
+	
+}
+
+void SetInputHigh_Mode()
+{
+	u8 samp_cnt = 0;
+	u16 read_value;
+	
+	while(mode==MODE_SETINPUT_HIGH)
+	{
+//        #ifdef WATCH_DOG
+//        WDT_CONTR = WATCH_DOG_RSTVAL;
+//        #endif
+        
+        
+        if(timer2_20ms_flag==1)
+        {
+            timer2_20ms_flag = 0;
+			samp_cnt++;
+            Update_InputCurrent();
+			
+			if(samp_cnt>50)
+			{
+				samp_cnt = samp_cnt;
+				pSystemParam->setinput_high = (u16)pData_ADC->adcvalue_input_filtered;
+				IapWrite_SetInputHigh(pSystemParam->setinput_high);
+				mode = MODE_DISTANT_ANALOG;	
+				read_value = IapRead_SetInputHigh();
+				printf("\r\n setinput_high:%d",pSystemParam->setinput_high);
+				printf("\r\n read_value_high:%d",read_value);
+				break;
+			}
+        }
+		
+        if(timer2_100ms_flag == 1)
+        {
+            timer2_100ms_flag = 0; 
+			Set_InputHigh_DIS();			
+            
+        } 
+
+		
+	}	
 }
 
 void CalOut_Mode()

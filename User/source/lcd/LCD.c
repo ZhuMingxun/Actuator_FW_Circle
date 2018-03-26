@@ -214,7 +214,43 @@ void Def100_DIS()
     HT1621B_WriteData(2,14);
     HT1621B_WriteData(3,6);
 }
-   
+void CalLow_DIS()//"LL"
+{
+	LCD_ClearDisplay();
+    HT1621B_WriteData(0,11);
+    HT1621B_WriteData(1,0);
+	HT1621B_WriteData(2,11);
+	HT1621B_WriteData(3,0);
+	
+}
+
+void CalHigh_DIS()//"HH"
+{
+	LCD_ClearDisplay();
+    HT1621B_WriteData(0,14);
+    HT1621B_WriteData(1,6);
+	HT1621B_WriteData(2,14);
+	HT1621B_WriteData(3,6);
+}
+
+void Set_InputLow_DIS()//"1L"
+{
+	LCD_ClearDisplay();
+	HT1621B_WriteData(0,0);
+	HT1621B_WriteData(1,6);
+	HT1621B_WriteData(2,11);
+	HT1621B_WriteData(3,0);
+}
+
+void Set_InputHigh_DIS()//"1H"
+{
+	LCD_ClearDisplay();
+	HT1621B_WriteData(0,0);
+	HT1621B_WriteData(1,6);
+	HT1621B_WriteData(2,14);
+	HT1621B_WriteData(3,6);
+}
+
 /************************************************************************************
 函数名      ：RealTime_Opening_DIS
 功能描述    ：显示阀门实时开度
@@ -538,6 +574,11 @@ void Local_DIS()
 {
     HT1621B_WriteData(14,2);  
 }
+
+
+
+
+
 
 /************************************************************************************
 函数名      ：OutputCurrent_DIS

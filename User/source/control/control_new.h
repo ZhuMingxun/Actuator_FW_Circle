@@ -19,7 +19,13 @@ typedef enum
     MODE_OUT_CAL           ,       
     MODE_IN_CAL            ,        
     MODE_SET_SEN           ,
-}Mode_Type;    extern volatile Mode_Type mode; 
+	MODE_CAL_LOW			,
+	MODE_CAL_HIGH			,
+	MODE_SETINPUT_LOW		,
+	MODE_SETINPUT_HIGH
+    
+}Mode_Type;    
+extern volatile Mode_Type mode; 
 
 #define DISTANT         (LOCAL != LOCAL_ON && LOCAL_STOP != LOCAL_STOP_ON)
 #define T2_MS           20  //20ms 50Hz

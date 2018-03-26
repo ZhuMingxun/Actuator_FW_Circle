@@ -36,7 +36,7 @@ void DebugPrintf()
     //float vol = pData_Voltage->voltage_input;
     
     //printf("InputRes: %f,OutputRes: %f \r\n",pSystemParam->res_input,pSystemParam->res_output);
-    printf("use encoder : %d\r\n",use_encoder_flag);
+    //printf("use encoder : %d\r\n",use_encoder_flag);
     #endif   
     
     

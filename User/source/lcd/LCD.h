@@ -43,6 +43,12 @@ void EP_Alarm_DIS();
 void LCD_MotorErrDIS();
 void Clear_Alarm_DIS();
 
+void CalLow_DIS();
+void CalHigh_DIS();
+
+void Set_InputLow_DIS();
+void Set_InputHigh_DIS();
+
 extern u8  ep_discnt;
 extern u8  lo_discnt;
 extern u8  lc_discnt;

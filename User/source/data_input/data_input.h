@@ -26,6 +26,12 @@ typedef struct
     float res_input;
     float res_output;
     
+    float margin;
+	u16 cal_low;
+	u16 cal_high;
+	u16 setinput_low;
+	u16 setinput_high;
+    
 }SystemParameter_TypeDef;//系统参数结构体
 extern SystemParameter_TypeDef* pSystemParam;
 void SystemParam_Init();

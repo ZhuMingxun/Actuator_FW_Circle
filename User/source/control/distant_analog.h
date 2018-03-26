@@ -28,5 +28,5 @@ void DistantAnalog_Mode();
 void DistantAnalog_Control();
 void PosControl_Init();
 void GetEndPos();
-
+void Set_InputLowHigh_Detect();
 #endif

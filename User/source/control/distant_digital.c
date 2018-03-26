@@ -64,15 +64,13 @@ void DistantDigital_Mode()
     DistantDigital_Init();
     while(mode==MODE_DISTANT_DIGITAL)
     {
-        
-        //#ifdef DEBUG
+       
         if(timer2_20ms_flag == 1)
         {
             timer2_20ms_flag = 0;
             Acquire_Data();
-            DebugPrintf();
+            printf(" -Distant Digital - \r\n");
         }
-        //#endif
         
         if(timer2_60ms_flag == 1)
         {
@@ -121,6 +119,7 @@ void DistantDigital_Mode()
         {
             timer_1s_flag = 0;
             MotorErr_Detect();
+            Set_InputLowHigh_Detect();
         }
         
         

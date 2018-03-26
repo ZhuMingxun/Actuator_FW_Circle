@@ -64,25 +64,42 @@ void SystemParam_Init()
     }
     else
     {
-			  pSystemParam->close_dir = -1;
+	    pSystemParam->close_dir = -1;
         pSystemParam->adcvalue_valvelow = 255;
         pSystemParam->adcvalue_valvehigh = 800;
         pSystemParam->sen = SEN0_5MA;
         pSystemParam->res_input = 200.0;
         pSystemParam->res_output = 200.0;
-				pPosCTR->offset_open_filter = 10.0f;
-				pPosCTR->offset_close_filter = -10.0f; 
+
         
-			
-				IapWrite_CloseDir(-1);
+		pSystemParam->cal_low = 400;
+		pSystemParam->cal_high = 2000;
+        
+		pPosCTR->offset_open_filter = 10.0f;
+		pPosCTR->offset_close_filter = -10.0f; 
+		
+        pSystemParam->setinput_low = 164;
+		pSystemParam->setinput_high = 819;
+        
+        pSystemParam->margin = 1.6;
+        
+		IapWrite_CloseDir(-1);
         IapWrite_Opening0_adc(255);
         IapWrite_Opening100_adc(800);
         IapWrite_Sen(SEN0_5MA);
         IapWrite_R_in(200.0);
         IapWrite_R_out(200.0);
         IapWrite_InitFlag();
-			  IapWrite_OffsetClose(-10.0f);
-			  IapWrite_OffsetOpen(10.0f);
+		IapWrite_OffsetClose(-10.0f);
+		IapWrite_OffsetOpen(10.0f);
+        
+		IapWrite_CalLow(400);
+		IapWrite_CalHigh(2000);
+		
+		IapWrite_SetInputLow(164);
+		IapWrite_SetInputHigh(819);
+        
+        IapWrite_Margin(1.6);
     }
 }
 //读取Flash中的系统参数
@@ -97,16 +114,36 @@ void ReadSystemPara()
     pPosCTR->offset_open_filter = IapRead_OffsetOpen();
 	pPosCTR->offset_close_filter = IapRead_OffsetClose();
 	
-	if(pPosCTR->offset_open_filter>10 || pPosCTR->offset_open_filter<0)
-	{
-		pPosCTR->offset_open_filter = 10;
-		IapWrite_OffsetOpen(10.0f);
-	}
-	if(pPosCTR->offset_close_filter<-10 || pPosCTR->offset_close_filter>0)
-	{
-		pPosCTR->offset_close_filter = -10;
-		IapWrite_OffsetClose(-10.0f);
-	}
+	pSystemParam->cal_low = IapRead_CalLow();
+	pSystemParam->cal_high = IapRead_CalHigh();
+    
+	pSystemParam->setinput_low = IapRead_SetInputLow();
+	pSystemParam->setinput_high = IapRead_SetInputHigh();
+    
+    pSystemParam->margin = IapRead_Margin();
+    
+	if(pSystemParam->setinput_low<50 || pSystemParam->setinput_low>300)
+		pSystemParam->setinput_low = 164;
+	
+	if(pSystemParam->setinput_high<700 || pSystemParam->setinput_high>950)
+		pSystemParam->setinput_high = 819;
+    
+	if(pSystemParam->cal_low>2500)
+		pSystemParam->cal_low = 400;
+	
+	if(pSystemParam->cal_high>2500)
+		pSystemParam->cal_high = 2000;
+    
+//	if(pPosCTR->offset_open_filter>10 || pPosCTR->offset_open_filter<0)
+//	{
+//		pPosCTR->offset_open_filter = 10;
+//		IapWrite_OffsetOpen(10.0f);
+//	}
+//	if(pPosCTR->offset_close_filter<-10 || pPosCTR->offset_close_filter>0)
+//	{
+//		pPosCTR->offset_close_filter = -10;
+//		IapWrite_OffsetClose(-10.0f);
+//	}
 }
 
 
@@ -272,11 +309,16 @@ void Update_InputCurrent()
     static float pre_in;
     static u8 cnt = 0;
     static u8 firstflag = 1;
+    float k;
     
     pData_ADC->adcvalue_input = Get_Vx_adc(VI_CH);
     pData_ADC->adcvalue_input_filtered = Butterworth_Filter_Input((float)pData_ADC->adcvalue_input);
-    pData_Voltage->voltage_input =  Get_Vi(pData_ADC,pData_Voltage);
-    cur_in  =  Get_InputCurrent(pData_Voltage,pSystemParam);
+//    pData_Voltage->voltage_input =  Get_Vi(pData_ADC,pData_Voltage);
+//    cur_in  =  Get_InputCurrent(pData_Voltage,pSystemParam);
+
+    k = 16.0/((float)(pSystemParam->setinput_high-pSystemParam->setinput_low));
+    cur_in = k*(pData_ADC->adcvalue_input_filtered-pSystemParam->setinput_low)+4.0;
+    
     
     if(firstflag==1)
     {
@@ -285,10 +327,10 @@ void Update_InputCurrent()
     }
     else
     {
-        if(fabs(cur_in-pre_in)>=0.1)
+        if(fabs(cur_in-pre_in)>=0.16)
         {
             cnt++;
-            if(cnt>5)
+            if(cnt>50)
             {
                 pData_Acquire->current_input = cur_in;
                 pre_in = cur_in;

@@ -212,6 +212,37 @@ void IapWrite_OffsetClose(float offset_c)
 
 }
 
+void IapWrite_Margin(float offset_c)
+{
+    u16 addr = ADDR_OPENING_0;
+    u8 i;
+    u8 datatemp[20];
+	  union
+    {
+        float Res;
+        u8 R_data[4];
+    }F32_data;
+		
+		F32_data.Res = offset_c;
+		
+    for(i=0;i<20;i++)
+    {      
+        datatemp[i]= IapReadByte(i+addr);
+    }
+    datatemp[8] = F32_data.R_data[0];
+    datatemp[9] = F32_data.R_data[1];
+    datatemp[10] = F32_data.R_data[2];
+    datatemp[11] = F32_data.R_data[3];
+		
+    IapEraseSector(addr);
+    
+    for(i=0;i<20;i++)
+    {
+        IapProgramByte(i+addr,datatemp[i]);
+    }
+
+}
+
 void IapWrite_CloseDir(signed char dir)
 {
     u16 addr = ADDR_OPENING_0;
@@ -345,6 +376,95 @@ void IapWrite_OffsetOpen(float offset_o)
 
 }
 
+void IapWrite_CalLow(u16 cntlow)
+{
+	u16 addr = ADDR_OPENING_100;
+	u8 datatemp[20];
+	u8 i;
+	
+	//read and save data first
+    for(i=0;i<20;i++)
+    {      
+        datatemp[i]= IapReadByte(i+addr);
+    }
+	datatemp[11] = (u8)(cntlow>>8);
+	datatemp[12] = (u8)(cntlow&0x00FF);
+	
+	IapEraseSector(addr);
+	
+    for(i=0;i<20;i++)
+    {
+        IapProgramByte(i+addr,datatemp[i]);
+    }
+	
+}
+
+void IapWrite_CalHigh(u16 cnthigh)
+{
+	u16 addr = ADDR_OPENING_100;
+	u8 datatemp[20];
+	u8 i;
+	
+	//read and save data first
+    for(i=0;i<20;i++)
+    {      
+        datatemp[i]= IapReadByte(i+addr);
+    }
+	datatemp[13] = (u8)(cnthigh>>8);
+	datatemp[14] = (u8)(cnthigh&0x00FF);
+	
+	IapEraseSector(addr);
+	
+    for(i=0;i<20;i++)
+    {
+        IapProgramByte(i+addr,datatemp[i]);
+    }
+	
+}
+
+void IapWrite_SetInputLow(u16 val)
+{
+	u16 addr = ADDR_OPENING_100;
+	u8 datatemp[20];
+	u8 i;
+
+	//read and save data first
+    for(i=0;i<20;i++)
+    {      
+        datatemp[i]= IapReadByte(i+addr);
+    }
+	datatemp[15] = (u8)(val>>8);
+	datatemp[16] = (u8)(val&0x00FF);
+	IapEraseSector(addr);
+	
+    for(i=0;i<20;i++)
+    {
+        IapProgramByte(i+addr,datatemp[i]);
+    }
+	
+	
+}
+void IapWrite_SetInputHigh(u16 val)
+{
+	u16 addr = ADDR_OPENING_100;
+	u8 datatemp[20];
+	u8 i;
+
+	//read and save data first
+    for(i=0;i<20;i++)
+    {      
+        datatemp[i]= IapReadByte(i+addr);
+    }
+	datatemp[17] = (u8)(val>>8);
+	datatemp[18] = (u8)(val&0x00FF);
+	IapEraseSector(addr);
+	
+    for(i=0;i<20;i++)
+    {
+        IapProgramByte(i+addr,datatemp[i]);
+    }
+
+}
 
 //=============================================
 //================Read=========================
@@ -378,6 +498,22 @@ float IapRead_OffsetClose()
     return F32_data.Res;  
 }
 
+float IapRead_Margin()
+{
+     union
+     {
+        float Res;
+        u8 R_data[4];
+     }F32_data;
+
+     F32_data.R_data[0] = IapReadByte(ADDR_OFFSET_CLOSE);
+     F32_data.R_data[1] = IapReadByte(ADDR_OFFSET_CLOSE+1);
+     F32_data.R_data[2] = IapReadByte(ADDR_OFFSET_CLOSE+2);
+     F32_data.R_data[3] = IapReadByte(ADDR_OFFSET_CLOSE+3);
+		 
+    return F32_data.Res;  
+}
+
 signed char IapRead_CloseDir()
 {
 	signed char dir;
@@ -387,7 +523,8 @@ signed char IapRead_CloseDir()
 	
 	
 }
-u16 IapRead_Opening0_adc()
+
+u16 IapRead_Opening0_adc()
 {
     u16 tmp;
     u8  tmph;
@@ -481,3 +618,58 @@ float IapRead_OffsetOpen()
 }
 
 
+u16 IapRead_CalLow()
+{
+	u8 tmpl;
+	u8 tmph;
+	u16 tmp;
+	
+	tmph = IapReadByte(ADDR_CAL_LOW);
+	tmpl = IapReadByte(ADDR_CAL_LOW+1);
+	
+	tmp = (((u16)tmph<<8)&0xFF00) | (tmpl&0x00FF);
+	
+	return tmp;
+}
+
+u16 IapRead_CalHigh()
+{
+	u8 tmpl;
+	u8 tmph;
+	u16 tmp;
+	
+	tmph = IapReadByte(ADDR_CAL_HIGH);
+	tmpl = IapReadByte(ADDR_CAL_HIGH+1);
+	
+	tmp = (((u16)tmph<<8)&0xFF00) | (tmpl&0x00FF);
+	
+	return tmp;
+}
+
+u16 IapRead_SetInputLow()
+{
+	u8 tmpl;
+	u8 tmph;
+	u16 tmp;
+	
+	tmph = IapReadByte(ADDR_INPUT_LOW);
+	tmpl = IapReadByte(ADDR_INPUT_LOW+1);
+	
+	tmp = (((u16)tmph<<8)&0xFF00) | (tmpl&0x00FF);
+	
+	return tmp;
+}
+
+u16 IapRead_SetInputHigh()
+{
+	u8 tmpl;
+	u8 tmph;
+	u16 tmp;
+	
+	tmph = IapReadByte(ADDR_INPUT_HIGH);
+	tmpl = IapReadByte(ADDR_INPUT_HIGH+1);
+	
+	tmp = (((u16)tmph<<8)&0xFF00) | (tmpl&0x00FF);
+	
+	return tmp;	
+}

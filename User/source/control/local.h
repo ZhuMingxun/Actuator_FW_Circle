@@ -25,6 +25,20 @@
 #define SEN0_45MA   1440
 #define SEN0_5MA    1600
 
+#define KEY_LOCAL 	1
+#define KEY_STOP 	2
+#define KEY_OPEN 	3
+#define KEY_CLOSE 	4
+#define KEY_REMOTE 	5
+#define SCAN_DELAY_MS 10
+#define SCAN_RMTDELAY_MS 100
+
+#define LOCAL_STAT_STOP 			0
+#define LOCAL_STAT_OPEN_INCHING 	1
+#define LOCAL_STAT_OPEN_KEEP 		2
+#define LOCAL_STAT_CLOSE_INCHING 	3
+#define LOCAL_STAT_CLOSE_KEEP 		4
+
 
 typedef enum
 {
@@ -42,6 +56,12 @@ void CalOut_Mode();
 void CalIn_Mode();
 void Exti23_Config();
 void Exti23_Disable();
+
+void CalHigh_Mode();
+void CalLow_Mode();
+u8 KeyScan(u8 key);
+void SetInputLow_Mode();
+void SetInputHigh_Mode();
 
 extern volatile LocalCmd_Type local_cmd;
 

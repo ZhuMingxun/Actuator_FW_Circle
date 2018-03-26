@@ -33,7 +33,7 @@ void main()
     
     Detect_ValveInput();
     DataSampInit();
-    PosControl_Init();
+    //PosControl_Init();
     
     while(1)
     {
@@ -45,8 +45,11 @@ void main()
             case MODE_DEF_ZERO:         {DefZero_Mode();        break;}
             case MODE_DEF_HUNDRED:      {DefHundred_Mode();     break;}
             case MODE_SET_SEN:          {SetSen_Mode();         break;}
-            case MODE_OUT_CAL:          {CalOut_Mode();         break;}
-            case MODE_IN_CAL:           {CalIn_Mode();          break;}
+            case MODE_CAL_LOW:			{CalLow_Mode();break;}
+			case MODE_CAL_HIGH:			{CalHigh_Mode();break;}
+			case MODE_SETINPUT_LOW:  	{SetInputLow_Mode();break;}
+			case MODE_SETINPUT_HIGH: 	{SetInputHigh_Mode();break;}	
+			
 #ifdef PHASE_SEQ
             case MODE_LACK_PHASE:       {LackPhase_Mode();break;}
 #endif
