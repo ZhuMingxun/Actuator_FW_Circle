@@ -56,51 +56,7 @@ u8 IRisReadyToRead()
         
 }
 
-void IRCmd_To_LocalCmd()
-{
-    switch(ircmd)
-    {
-        case IR_COMMAND_100:    break;   
-        case IR_COMMAND_0:      break;       
-        case IR_COMMAND_OPEN:   {local_cmd = LOCAL_CMD_OPEN; break;}    
-        case IR_COMMAND_CLOSE:  {local_cmd = LOCAL_CMD_CLOSE;break;} 
-        case IR_COMMAND_STOP:   {local_cmd = LOCAL_CMD_STOP; break;}
-        case IR_COMMAND_4:      break;
-        case IR_COMMAND_0_100:
-        {
-            if(LOCAL_STOP == LOCAL_STOP_ON) 
-            mode =  MODE_SET_SEN; 
-            break;
-        }
-        case IR_COMMAND_4_0:    
-        {
-            if(LOCAL_STOP == LOCAL_STOP_ON)
-            mode = MODE_DEF_ZERO;
-            break;
-        }
-        case IR_COMMAND_4_100:  
-        {
-            if(LOCAL_STOP == LOCAL_STOP_ON)
-            mode = MODE_DEF_HUNDRED;
-            break;
-        }
-        case IR_COMMAND_4_OPEN:
-        {
-            if(LOCAL_STOP == LOCAL_STOP_ON)
-            mode = MODE_OUT_CAL;
-            break;
-        }
-        case IR_COMMAND_4_CLOSE:
-        {
-            if(LOCAL_STOP == LOCAL_STOP_ON)
-            mode = MODE_IN_CAL;
-            break;
-        }
-        default:break;  
-    }
-    ircmd = 0;
 
-}
 
 void IRCmd_LongPress_Count(u16 cmd)
 {

@@ -6,7 +6,6 @@ void main()
 {
 	delay_ms(500);	
 	delay_ms(500);	
-	delay_ms(500);	
     LCD_Init();
     
     Motor_Config();
@@ -33,7 +32,6 @@ void main()
     
     Detect_ValveInput();
     DataSampInit();
-    //PosControl_Init();
     
     while(1)
     {

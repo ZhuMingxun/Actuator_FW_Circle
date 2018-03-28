@@ -39,7 +39,8 @@ void PWM_Update()
 {                        
     u16 pwm_cnt_tmp;
    
-    pwm_cnt_tmp = (u16)(((pData_Acquire->current_output) / 1000) * pSystemParam->res_output * PWM_DUTY / pData_Voltage->voltage_vcc);
+//    pwm_cnt_tmp = (u16)(((pData_Acquire->current_output) / 1000) * pSystemParam->res_output * PWM_DUTY / pData_Voltage->voltage_vcc);
+    pwm_cnt_tmp = ((pData_Acquire->current_output/1.0) - 4.0)*(float)(pSystemParam->cal_high-pSystemParam->cal_low)/16.0 + pSystemParam->cal_low;
     
     if(pwm_cnt_tmp > PWM_HIGH_MAX)
     {
@@ -72,7 +73,8 @@ void PWM_Cal(u16 pwmcnt_cal)
     pwm_low = 65536UL - (PWM_DUTY - pwmcnt_cal);
     pwm_high = 65536UL - pwmcnt_cal;
     EA = 1;
-}
+}
+
 /********************* Timer0ÖÐ¶Ïº¯Êý************************/
 void timer0_int (void) interrupt TIMER0_VECTOR
 {

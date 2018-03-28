@@ -19,10 +19,13 @@
 #include <math.h>
 #include <stdio.h>
 #include "uart_debug.h"
+
+static bit m_pos_rev = 1;
+
 #define RELAY_ON            0
 #define RELAY_OFF           1
-#define M_OPEN              {RELAY_A = (RELAY_ON ^ phase_seq ^ POS_REV);RELAY_B = !RELAY_A;}
-#define M_CLOSE             {RELAY_B = (RELAY_ON ^ phase_seq ^ POS_REV);RELAY_A = !RELAY_B;}
+#define M_OPEN              {RELAY_A = (RELAY_ON ^ phase_seq ^ m_pos_rev);RELAY_B = !RELAY_A;}
+#define M_CLOSE             {RELAY_B = (RELAY_ON ^ phase_seq ^ m_pos_rev);RELAY_A = !RELAY_B;}
 #define M_STOP              {RELAY_A = RELAY_OFF;RELAY_B = RELAY_OFF;}
 #define MOTOR_DELAY_MS      2000 //2s
 #define TORQUE_DELAY_MS     3000 //3s
@@ -113,7 +116,6 @@ static void Motor_Close()
     {
         motor_status = MOTOR_STATUS_CLOSE;
         M_CLOSE
-
     }
     
 }
@@ -205,13 +207,22 @@ void TravelProtect()
         {
             if(PIN_LIM_CLE == LIM_ON || opening<=0.0)
             { 
-								local_cmd = LOCAL_CMD_STOP;
-							  distant_cmd = DISTANT_CMD_STOP;
-                Motor_Stop();//printf("open travel!! \r\n");
+				local_cmd = LOCAL_CMD_STOP;
+				distant_cmd = DISTANT_CMD_STOP;
+                
                 if(opening==0.0)
                 {
                     //printf("open travel!! opening=0.0 \r\n");
-									_SET_CLOSE_IN_PLACE_FLAG
+					_SET_CLOSE_IN_PLACE_FLAG
+                }
+                Motor_Stop();
+                
+                if(opening<=0.0)
+                {
+                    local_stat =  LOCAL_STAT_STOP;
+                    distant_open_trigger_flag = 0;
+                    distant_close_trigger_flag = 0;
+                    
                 }
             }
             break;
@@ -220,37 +231,45 @@ void TravelProtect()
         {
             if(PIN_LIM_OPN == LIM_ON || opening>=1.0)
             {
-								local_cmd = LOCAL_CMD_STOP;
-							  distant_cmd = DISTANT_CMD_STOP;
-                Motor_Stop();//printf("close travel!! \r\n");
+				local_cmd = LOCAL_CMD_STOP;
+				distant_cmd = DISTANT_CMD_STOP;
+                //printf("close travel!! \r\n");
                 if(opening==1.0)
                 {
-										_SET_OPEN_IN_PLACE_FLAG
+					_SET_OPEN_IN_PLACE_FLAG
                     //printf("close travel!! opening=1.0 \r\n");
+                }
+                Motor_Stop();
+                
+                if(opening>=1.0)
+                {
+                    local_stat =  LOCAL_STAT_STOP;
+                    distant_open_trigger_flag = 0;
+                    distant_close_trigger_flag = 0;
                 }
             }
             break;
         }
                 
-        case MOTOR_STATUS_STOP:
-        {
-            if( opening<=0.0)
-            {
+//        case MOTOR_STATUS_STOP:
+//        {
+//            if( opening<=0.0)
+//            {
 
-								_SET_CLOSE_IN_PLACE_FLAG							
-                //printf("close travel!! -- Motor_CR |= (u8)(1<<0) \r\n");
-            }
-            else if( opening>=1.0)
-            {
-                _SET_OPEN_IN_PLACE_FLAG
-               // printf("open travel!! -- Motor_CR |= (u8)(1<<1) \r\n");
-            }
-            else
-            {
-                _CLEAR_IN_PLACE_FLAG	
-            }
-            break;
-        }
+//								_SET_CLOSE_IN_PLACE_FLAG							
+//                //printf("close travel!! -- Motor_CR |= (u8)(1<<0) \r\n");
+//            }
+//            else if( opening>=1.0)
+//            {
+//                _SET_OPEN_IN_PLACE_FLAG
+//               // printf("open travel!! -- Motor_CR |= (u8)(1<<1) \r\n");
+//            }
+//            else
+//            {
+//                _CLEAR_IN_PLACE_FLAG	
+//            }
+//            break;
+//        }
         default:break;
     }
             
@@ -265,12 +284,73 @@ void TravelProtect_Machine()
         {
             if(PIN_LIM_CLE == LIM_ON)
             { 
-                Motor_Stop();//printf("open travel!! \r\n");
+                //local_stat =  LOCAL_STAT_STOP;
+				local_cmd = LOCAL_CMD_STOP;
+				distant_cmd = DISTANT_CMD_STOP;
+//                distant_open_trigger_flag = 0;
+//                distant_close_trigger_flag = 0;
                 if(opening==0.0)
                 {
                     //printf("open travel!! opening=0.0 \r\n");
 					_SET_CLOSE_IN_PLACE_FLAG
                 }
+                Motor_Stop();//printf("open travel!! \r\n");
+            }
+            break;
+        }            
+        case MOTOR_STATUS_OPEN:
+        {
+            if(PIN_LIM_OPN == LIM_ON)
+            {
+                //local_stat =  LOCAL_STAT_STOP;
+				local_cmd = LOCAL_CMD_STOP;
+				distant_cmd = DISTANT_CMD_STOP;
+//                distant_open_trigger_flag = 0;
+//                distant_close_trigger_flag = 0;
+                if(opening==1.0)
+                {
+					_SET_OPEN_IN_PLACE_FLAG
+                    //printf("close travel!! opening=1.0 \r\n");
+                }
+                Motor_Stop();//printf("close travel!! \r\n");
+            }
+            break;
+        }
+                
+//        case MOTOR_STATUS_STOP:
+//        {
+//            if( opening<=0.0)
+//            {
+//				_SET_CLOSE_IN_PLACE_FLAG							
+//                //printf("close travel!! -- Motor_CR |= (u8)(1<<0) \r\n");
+//            }
+//            else if( opening>=1.0)
+//            {
+//                _SET_OPEN_IN_PLACE_FLAG
+//               // printf("open travel!! -- Motor_CR |= (u8)(1<<1) \r\n");
+//            }
+//            else
+//            {
+//                _CLEAR_IN_PLACE_FLAG
+//                
+//            }
+//            break;
+//        }
+        default:break;
+    }
+    
+}
+
+void TravelProtect_Def()
+{
+      
+    switch(motor_status)
+    {
+        case MOTOR_STATUS_CLOSE:
+        {
+            if(PIN_LIM_CLE == LIM_ON)
+            { 
+                Motor_Stop();//printf("open travel!! \r\n");
             }
             break;
         }            
@@ -279,45 +359,23 @@ void TravelProtect_Machine()
             if(PIN_LIM_OPN == LIM_ON)
             {
                 Motor_Stop();//printf("close travel!! \r\n");
-                if(opening==1.0)
-                {
-					_SET_OPEN_IN_PLACE_FLAG
-                    //printf("close travel!! opening=1.0 \r\n");
-                }
-            }
-            break;
-        }
-                
-        case MOTOR_STATUS_STOP:
-        {
-            if( opening<=0.0)
-            {
-				_SET_CLOSE_IN_PLACE_FLAG							
-                //printf("close travel!! -- Motor_CR |= (u8)(1<<0) \r\n");
-            }
-            else if( opening>=1.0)
-            {
-                _SET_OPEN_IN_PLACE_FLAG
-               // printf("open travel!! -- Motor_CR |= (u8)(1<<1) \r\n");
-            }
-            else
-            {
-                _CLEAR_IN_PLACE_FLAG
-                
             }
             break;
         }
         default:break;
     }
-    
+            
 }
+
+
+
 /* 到位输出函数 */
 u8 LimitPosition_Output()
 {
     if(pData_Acquire->opening >=1.0)  { PIN_FLAG_LIMOPN_ON return 1;}
     else if(pData_Acquire->opening <=0.0)  { PIN_FLAG_LIMCLE_ON return 0;}
         else { 
-				if(pData_Acquire->opening<=0.985 && pData_Acquire->opening>=0.015)
+				if(pData_Acquire->opening<=0.975 && pData_Acquire->opening>=0.015)
 				{
 					PIN_FLAG_LIMOPN_OFF
 					PIN_FLAG_LIMCLE_OFF
@@ -325,7 +383,7 @@ u8 LimitPosition_Output()
 				}
 				else
 				{
-					if(pData_Acquire->opening >=0.985)
+					if(pData_Acquire->opening >=0.975)
 						return 1;
 						else
 						return 0;
@@ -338,17 +396,44 @@ u8 LimitPosition_Output()
 /* 力矩保护检测函数 */
 void Torque_Detect()
 {
-    if(PIN_TORQUE_OPEN == TORQUE_ON && torquelock_open_flag == 0)
+    switch(motor_status)
     {
-        torquelock_open_flag = 1;
-        Motor_Stop();
+        case MOTOR_STATUS_CLOSE:
+        {
+            if(PIN_TORQUE_CLOSE == TORQUE_ON && torquelock_close_flag == 0)
+            {
+                    torquelock_close_flag = 1;
+                    Motor_Stop();
+            }
+            break;              
+        }
+        
+        case MOTOR_STATUS_OPEN:
+        {
+            if(PIN_TORQUE_OPEN == TORQUE_ON && torquelock_open_flag == 0)
+            {
+                torquelock_open_flag = 1;
+                Motor_Stop();
+         
+            }
+            break;            
+        }
+		
+        case MOTOR_STATUS_STOP:
+        {
+            if(PIN_TORQUE_CLOSE == TORQUE_ON && torquelock_close_flag == 0)
+            {
+                torquelock_close_flag = 1;
+            }
+            if(PIN_TORQUE_OPEN == TORQUE_ON && torquelock_open_flag == 0)
+            {
+                torquelock_open_flag = 1;
+            }
+            break;
 
-    }
-    if(PIN_TORQUE_CLOSE == TORQUE_ON && torquelock_close_flag == 0)
-    {
-        torquelock_close_flag = 1;
-        Motor_Stop();
 
+        }            
+        default:break;
     }
 
 }
@@ -535,6 +620,27 @@ void MotorErr_Detect()
             
         }
         default:break;
+    }
+    
+}
+
+void Motor_PosRev()
+{
+    if(POS_REV)
+    {
+        delay_ms(20);
+        if(POS_REV)
+        {
+            m_pos_rev = 1;
+        }
+    }
+    else
+    {
+        delay_ms(20);
+        if(!POS_REV)
+        {
+             m_pos_rev = 0;
+        }              
     }
     
 }

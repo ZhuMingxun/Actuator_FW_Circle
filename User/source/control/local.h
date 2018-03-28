@@ -46,7 +46,8 @@ typedef enum
     LOCAL_CMD_OPEN = 1 ,    
     LOCAL_CMD_CLOSE =2       
 }LocalCmd_Type;
-
+extern LocalCmd_Type local_cmd;
+extern  u8 local_stat;
 void Local_Mode();
 void Local_Control();
 void DefZero_Mode();

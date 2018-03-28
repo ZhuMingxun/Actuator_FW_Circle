@@ -26,7 +26,12 @@ void TravelProtect_Machine();
 void MotorErr_Detect();
 u8 LimitPosition_Output();
 void IntegAlarm();
+
 void MotorVel_Detect();
+void TravelProtect_Def();
+void CloseDir_Protect();
+void Motor_PosRev();
+
 extern volatile MotorStatus_Type motor_status;
 extern  u8 bdata Motor_CR;
 extern  bit torquelock_open_flag;//

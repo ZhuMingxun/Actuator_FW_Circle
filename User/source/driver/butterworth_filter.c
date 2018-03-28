@@ -36,6 +36,79 @@
 //static float b2 = 0.07295966;
 //static float a2 = -0.8540807;
 
+void SelectSortf(float*buf, u8 arrsize)
+{
+    u8 minindex;
+    float temp;
+    u8 i;
+    u8 j;
+    for(i=0;i<arrsize;i++)
+    {
+        minindex = i;
+        for(j=i+1;j<arrsize;j++)
+        {
+            if(buf[j]<buf[minindex])
+            {
+                minindex = j;
+            }
+        }
+        if(minindex != i)
+        {
+            temp = buf[i];
+            buf[i] = buf[minindex];
+            buf[minindex] = temp;
+        }
+    }
+}
+
+void BubbleSort(u16* buf,u8 n)
+{
+    u16 temp;
+    u8 i,j;
+    for(i = 0;i<n-1;++i)
+    {
+        for(j=0;j<n-i-1;++j)
+        {
+            if(buf[j]>buf[j+1])
+            {
+                temp = buf[j];
+                buf[j] = buf[j+1];
+                buf[j+1] = temp;
+            }
+        }
+    }
+}
+
+u16 Average_Process()
+{
+    static u16 slidebuf[10]={0};
+    u16 sortbuf[10];
+    //static u8 slidebuf_cnt=0;
+    u8 i;
+    u16 sum=0;
+    u16 tmp;
+
+//    if(slidebuf_cnt>=10)
+//        slidebuf_cnt=0;
+
+		for(i=0;i<9;i++)
+    		slidebuf[i] = Get_Vx_adc(VA_CH);
+    
+    for(i=0;i<10;i++)
+    {
+        sortbuf[i]=slidebuf[i];
+    }
+    
+    BubbleSort(sortbuf,sizeof(sortbuf)/sizeof(u16));
+    
+    for(i=3;i<8;i++)
+        sum += sortbuf[i];
+    
+    tmp = sum/5.0f;
+    return tmp;
+    
+}
+
 u16 RemoveJumpData_Valve(u16 dat)
 {
     u16 curdata;
@@ -195,53 +268,6 @@ u16 RemoveJumpData_Input(u16 dat)
     }  
 }
 
-void BubbleSort(u16* buf,u8 n)
-{
-    u16 temp;
-    u8 i,j;
-    for(i = 0;i<n-1;++i)
-    {
-        for(j=0;j<n-i-1;++j)
-        {
-            if(buf[j]>buf[j+1])
-            {
-                temp = buf[j];
-                buf[j] = buf[j+1];
-                buf[j+1] = temp;
-            }
-        }
-    }
-}
-
-u16 Average_Process()
-{
-    static u16 slidebuf[10]={0};
-    u16 sortbuf[10];
-    //static u8 slidebuf_cnt=0;
-    u8 i;
-    u16 sum=0;
-    u16 tmp;
-
-//    if(slidebuf_cnt>=10)
-//        slidebuf_cnt=0;
-
-		for(i=0;i<9;i++)
-    		slidebuf[i] = Get_Vx_adc(VA_CH);
-    
-    for(i=0;i<10;i++)
-    {
-        sortbuf[i]=slidebuf[i];
-    }
-    
-    BubbleSort(sortbuf,sizeof(sortbuf)/sizeof(u16));
-    
-    for(i=3;i<8;i++)
-        sum += sortbuf[i];
-    
-    tmp = sum/5.0f;
-    return tmp;
-    
-}
 
 float Butterworth_Filter_Valve(float nowdata)
 {

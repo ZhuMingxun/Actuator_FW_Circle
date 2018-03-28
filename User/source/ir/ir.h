@@ -23,7 +23,7 @@ void IR_PCA_Config();
 void IR_Disable();
 void IR_RingBuffer_Init();
 u8 IRisReadyToRead();
-void IRCmd_To_LocalCmd();
+
 //void IR_Test();
 void IR_Update();
 extern u16 data ircmd;

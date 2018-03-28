@@ -48,10 +48,7 @@ void DistantDigital_Init()
     Exti23_Disable();
     Motor_Stop();
     distant_cmd = DISTANT_CMD_STOP;
-    Motor_CR = 0x00;
     ERR_OFF
-//    lock_flag = 0;
-//    lock_cnt = 0;
 	distant_open_trigger_flag = 0;
 	distant_close_trigger_flag = 0;
     Distant_PCA_Config(); 
@@ -64,12 +61,18 @@ void DistantDigital_Mode()
     DistantDigital_Init();
     while(mode==MODE_DISTANT_DIGITAL)
     {
-       
+        
+        #ifdef TRAVEL_PROTECT_MACHINE
+            TravelProtect_Machine();
+        #else
+            TravelProtect();
+        #endif
+        
         if(timer2_20ms_flag == 1)
         {
             timer2_20ms_flag = 0;
             Acquire_Data();
-            printf(" -Distant Digital - \r\n");
+            Update_InputCurrent();
         }
         
         if(timer2_60ms_flag == 1)
@@ -81,14 +84,10 @@ void DistantDigital_Mode()
         if(timer2_100ms_flag == 1)
         {
             timer2_100ms_flag = 0;
-            Update_InputCurrent();
+
             Torque_Detect();//力矩检测
-        #ifdef TRAVEL_PROTECT_MACHINE
-            TravelProtect_Machine();
-        #else
-            TravelProtect();
-        #endif
             LimitPosition_Output();
+            Update_InputCurrent(); 
             DistantDigital_Control2();
             LCD_DIS();
             PWM_Update();    
@@ -119,7 +118,8 @@ void DistantDigital_Mode()
         {
             timer_1s_flag = 0;
             MotorErr_Detect();
-            Set_InputLowHigh_Detect();
+            printf(" -Distant Digital - \r\n");
+            //Set_InputLowHigh_Detect();
         }
         
         
@@ -215,11 +215,6 @@ void DistantDigital_Control2()
         if(PIN_LOSE_OPEN == 0)  distant_cmd = DISTANT_CMD_OPEN;
         if(PIN_LOSE_CLOSE == 0) distant_cmd = DISTANT_CMD_CLOSE;  
 	}
-
-		
-	
-	
-	
 	
 	/* 执行控制命令 */
     switch(distant_cmd)

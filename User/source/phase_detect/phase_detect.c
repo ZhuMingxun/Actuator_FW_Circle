@@ -13,7 +13,7 @@
 static PhaseSeq_Type data  phaseseq_status;//枚举变量，相序状态
 static data CapSeq_TypeDef Cap_Seq;//序列捕获结构体
 bit phase_seq = 1;
-
+u8 phase_update_ok=0;
 /*************************INT0,INT1 配置********************************/
 
 static void PhsaeSeqIO_Config()
@@ -42,6 +42,11 @@ void PhaseSeq_Detect_Config()
 {
     PhsaeSeqIO_Config();
     CapSeq_Init(&Cap_Seq); 
+    phase_update_ok = 0;
+    while(phase_update_ok !=1)
+    {
+        PhaseSeq_Update();
+    }
 }
 
 
@@ -50,6 +55,8 @@ void PhaseSeq_Detect_Config()
 void PhaseSeq_Update()//主函数执行
 {
     static u8 err_cnt = 0;
+    static u8 pcnt;
+    static u8 rcnt;
     u8 seq;
     
     if(Cap_Seq.capok_flag == 1)
@@ -59,16 +66,30 @@ void PhaseSeq_Update()//主函数执行
         {
             case 0x1E:case 0x87:case 0xE1:case 0x78:
             {
-                if(phaseseq_status != PHASESEQ_POSITIVE)  phaseseq_status = PHASESEQ_POSITIVE;
                 phase_seq = 1;
-                if(err_cnt != 0) err_cnt = 0;   
+                pcnt++;
+                if(pcnt>5)
+                {
+                     phaseseq_status = PHASESEQ_POSITIVE;
+                     phase_update_ok = 1;
+                     pcnt=0;
+                }
+                rcnt=0; 
+                err_cnt = 0;   
                 break;
             }
             case 0x2D:case 0xD2:case 0x4B:case 0xB4:
             {
-                if(phaseseq_status != PHASESEQ_REVERSE)  phaseseq_status = PHASESEQ_REVERSE;
                 phase_seq = 0;
-                if(err_cnt != 0) err_cnt = 0; 
+                rcnt++;
+                if(rcnt>5)
+                {
+                    phaseseq_status = PHASESEQ_REVERSE;
+                    phase_update_ok = 1;
+                    rcnt=0;
+                }
+                pcnt = 0;
+                err_cnt = 0; 
                 break;
             }
             default:
@@ -79,13 +100,16 @@ void PhaseSeq_Update()//主函数执行
                     err_cnt = 0;
                     phaseseq_status = PHASESEQ_LACK;
                     mode = MODE_LACK_PHASE; 
+                    phase_update_ok = 1;
                 }
+                pcnt=0;
+                rcnt=0;
                 break;
             }
         }
         
         
-        CapSeq_Init(&Cap_Seq);
+        //CapSeq_Init(&Cap_Seq);
     }
 }
 

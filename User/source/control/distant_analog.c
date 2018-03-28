@@ -55,16 +55,23 @@ extern  u16 code  sen_table[10];
 void DistantAnalogMode_Init()
 {
     Exti23_Disable();
+    Motor_Stop();
+    ReadSystemPara();
+    Acquire_Data();
+    
+    ctr_stat = CTR_STAT_STANDBY;
+    pPosCTR->pos_end_flag = 0;
+    
+    SystemMode_Detect();
+    
     IR_Disable();
     LED_LSG_OFF
     LCD_YELLOW_OFF
-    Motor_Stop();
+    
     ERR_OFF
-    ReadSystemPara();
-    Acquire_Data();
+    
     delay_ms(500);
-    delay_ms(500);
-    SystemMode_Detect();
+    
     FindMargin(&p_margin,pSystemParam->margin); 
     
    
@@ -123,9 +130,9 @@ void DistantAnalog_Mode()
         {
             timer2_20ms_flag = 0;
             Acquire_Data();
-
             Update_InputCurrent();
-            if(pSystemParam->sen != sen_table[9])
+            
+			if(pSystemParam->sen != sen_table[9])
             {
                 DistantAnalog_Control();
             }
@@ -142,6 +149,7 @@ void DistantAnalog_Mode()
         {
             timer2_60ms_flag = 0;
             MotorStop_Delay_60ms();
+			PWM_Update();
            
         }
         
@@ -150,17 +158,15 @@ void DistantAnalog_Mode()
             timer2_100ms_flag = 0;
             Torque_Detect();//力矩检测
             LimitPosition_Output();
-
-            //TravelProtect();
             LCD_DIS();
-            PWM_Update();
         }
         
         if(timer2_200ms_flag == 1)
         {
             timer2_200ms_flag = 0; 
             SystemMode_Detect();//远方现场模式检测
-            if(mode == MODE_LOCAL || mode == MODE_DISTANT_DIGITAL)  break;
+            if(mode == MODE_LOCAL || mode == MODE_DISTANT_DIGITAL)  
+                break;
             
             #ifdef PHASE_SEQ
             PhaseSeq_Update();
@@ -185,7 +191,7 @@ void DistantAnalog_Mode()
             timer_1s_flag = 0;
             MotorErr_Detect();
             Set_InputLowHigh_Detect();
-			//Motor_PosRev();
+			Motor_PosRev();
         }        
     }
   
