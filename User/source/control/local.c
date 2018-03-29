@@ -157,6 +157,10 @@ void Local_Mode()
     
     while( mode == MODE_LOCAL )
     { 
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
+        
         #ifdef TRAVEL_PROTECT_MACHINE
             TravelProtect_Machine();
         #else
@@ -234,7 +238,7 @@ void Local_Mode()
             MotorErr_Detect();
 			Local_Stat_Count_per60ms();
             Motor_PosRev();
-            printf(" -Local- \r\n");
+           // printf(" -Local- \r\n");
         }
   
     }
@@ -424,7 +428,11 @@ void DefZero_Mode()
     
     while(mode == MODE_DEF_ZERO)
     {
-         printf("\r\n enter while(1) !");
+        // printf("\r\n enter while(1) !");
+        
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
         
         if(IRisReadyToRead())
         {
@@ -445,7 +453,7 @@ void DefZero_Mode()
                     ir_4_cnt=0;
                     local_cmd = LOCAL_CMD_STOP;
                     mode = MODE_LOCAL;
-                    printf("\r\n IR_COMMAND_4 Exit!");
+                    //printf("\r\n IR_COMMAND_4 Exit!");
                 }
                 
                 ircmd = 0;
@@ -479,7 +487,7 @@ void DefZero_Mode()
                         delay_ms(500);
                         Def0_DIS();
                         delay_ms(500);
-                         printf("\r\n IR_COMMAND_0 Exit!");
+                         //printf("\r\n IR_COMMAND_0 Exit!");
                     }
                 }
                 ircmd = 0;
@@ -529,7 +537,7 @@ void DefZero_Mode()
 					if(cal_low_cnt>30)
 					{
 						mode = MODE_CAL_LOW;
-                        printf("\r\n enter MODE_CAL_LOW");
+                        //printf("\r\n enter MODE_CAL_LOW");
 						cal_low_cnt = 0;
 						return;
 					}
@@ -554,7 +562,7 @@ void DefZero_Mode()
 				if(KeyScan(KEY_LOCAL))
 				{
 					def_step = DEF_STEP1_LOCAL;
-					printf("\r\n Switch to DEF_STEP1_STOP");
+					//printf("\r\n Switch to DEF_STEP1_STOP");
 				}
 				break;
 			}
@@ -566,7 +574,7 @@ void DefZero_Mode()
 
 					def_step = DEF_STEP2_STOP;
 					exit_cnt = 15;
-					printf("\r\n Switch to DEF_STEP2_STOP");
+					//printf("\r\n Switch to DEF_STEP2_STOP");
 				}
 				break;
 			}
@@ -577,7 +585,7 @@ void DefZero_Mode()
 				if(KeyScan(KEY_LOCAL))
 				{
 					def_step = DEF_STEP3_LOCAL;
-					printf("\r\n Switch to DEF_STEP3_STOP");
+					//printf("\r\n Switch to DEF_STEP3_STOP");
 				}
 				
 				break;
@@ -605,11 +613,11 @@ void DefZero_Mode()
                     delay_ms(500);
                     Def0_DIS();
                     delay_ms(500);
-                    printf("\r\n DEF_STEP3_LOCAL Exit Save!");                    
+                    //printf("\r\n DEF_STEP3_LOCAL Exit Save!");                    
  
 				}
                 mode = MODE_LOCAL; 
-			    printf("\r\n DEF_STEP3_LOCAL Exit!");
+			    //printf("\r\n DEF_STEP3_LOCAL Exit!");
 				break;
 			}
 			default:break;
@@ -619,7 +627,7 @@ void DefZero_Mode()
 		Local_Stat_Detect();
         Local_Control();
         LCD_SetDIS();
-        printf("\r\nwhile(1) end");
+        //printf("\r\nwhile(1) end");
     }
     
 }
@@ -642,6 +650,11 @@ void DefHundred_Mode()
     
     while(mode == MODE_DEF_HUNDRED)
     {
+        
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
+        
         Acquire_Data();
         
         if(IRisReadyToRead())
@@ -856,6 +869,9 @@ void SetSen_Mode()
     
     while(mode == MODE_SET_SEN)
     {
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
         
         if( IRisReadyToRead() )
         {
@@ -920,16 +936,18 @@ void CalLow_Mode()
  
     while(KeyScan(KEY_CLOSE))
 	{
-//        #ifdef WATCH_DOG
-//        WDT_CONTR = WATCH_DOG_RSTVAL;
-//        #endif  
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
+        
 		delay_ms(50);
 	}
     while(mode == MODE_CAL_LOW)
     {
-//        #ifdef WATCH_DOG
-//        WDT_CONTR = WATCH_DOG_RSTVAL;
-//        #endif    
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif  
+        
         if( IRisReadyToRead() )
         {
            IR_Update(); 
@@ -1069,14 +1087,21 @@ void CalHigh_Mode()
 
 	while(KeyScan(KEY_OPEN))//等待按键释放
 	{
-		delay_ms(50);
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
+        
+        delay_ms(50);
 	}
 	
 	//printf("\r\npwm_cal_cnt:%d ",(int)pwm_cal_cnt);
 	
     while(mode == MODE_CAL_HIGH)
     {
-
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
+        
         if( IRisReadyToRead() )
         {
            IR_Update(); 
@@ -1110,9 +1135,9 @@ void CalHigh_Mode()
                 pSystemParam->cal_high = pwm_cal_cnt;
                 IapWrite_CalHigh(pwm_cal_cnt);
                 rd_cnt = IapRead_CalHigh();
-                printf("\r\nset_cnt:%d ",(int)pwm_cal_cnt);
-                printf("\r\nread_cnt:%d ",(int)rd_cnt);
-                printf("\r\ncal_high:%d ",(int)pSystemParam->cal_high);
+                //printf("\r\nset_cnt:%d ",(int)pwm_cal_cnt);
+                //printf("\r\nread_cnt:%d ",(int)rd_cnt);
+                //printf("\r\ncal_high:%d ",(int)pSystemParam->cal_high);
                 
                 mode = MODE_LOCAL;//确定退出
 				LCD_ClearDisplay();
@@ -1206,9 +1231,9 @@ void SetInputLow_Mode()
 	u16 read_value;
 	while(mode==MODE_SETINPUT_LOW)
 	{
-//        #ifdef WATCH_DOG
-//        WDT_CONTR = WATCH_DOG_RSTVAL;
-//        #endif
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
         
         if(timer2_20ms_flag==1)
         {
@@ -1223,8 +1248,8 @@ void SetInputLow_Mode()
 				IapWrite_SetInputLow(pSystemParam->setinput_low);
 				read_value = IapRead_SetInputLow();
 				mode = MODE_DISTANT_ANALOG;
-				printf("\r\n setinput_low:%d",pSystemParam->setinput_low);
-				printf("\r\n read_value_low:%d",read_value);
+				//printf("\r\n setinput_low:%d",pSystemParam->setinput_low);
+				//printf("\r\n read_value_low:%d",read_value);
 				LCD_ClearDisplay();
 				delay_ms(500);
 				Set_InputLow_DIS();
@@ -1255,10 +1280,9 @@ void SetInputHigh_Mode()
 	
 	while(mode==MODE_SETINPUT_HIGH)
 	{
-//        #ifdef WATCH_DOG
-//        WDT_CONTR = WATCH_DOG_RSTVAL;
-//        #endif
-        
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
         
         if(timer2_20ms_flag==1)
         {
@@ -1273,8 +1297,8 @@ void SetInputHigh_Mode()
 				IapWrite_SetInputHigh(pSystemParam->setinput_high);
 				mode = MODE_DISTANT_ANALOG;	
 				read_value = IapRead_SetInputHigh();
-				printf("\r\n setinput_high:%d",pSystemParam->setinput_high);
-				printf("\r\n read_value_high:%d",read_value);
+//printf("\r\n setinput_high:%d",pSystemParam->setinput_high);
+				//printf("\r\n read_value_high:%d",read_value);
 				delay_ms(500);
 				Set_InputHigh_DIS();
 				delay_ms(500);

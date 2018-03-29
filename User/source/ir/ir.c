@@ -258,31 +258,31 @@ void	PCA_Handler (void) interrupt PCA_VECTOR
     if(CCF1)
     {
         CCF1 = 0;
-        if( mode == MODE_DISTANT_DIGITAL && PIN_DISTANT_STOP==0)
-        {
-            delay_ms(2);
-            if(PIN_DISTANT_OPEN == 0 )//下降沿触发
-            {
-                distant_open_trigger_flag = 1;
-                distant_close_trigger_flag = 0;
-            }           
-        }
+//        if( mode == MODE_DISTANT_DIGITAL && PIN_DISTANT_STOP==0)
+//        {
+//            delay_ms(2);
+//            if(PIN_DISTANT_OPEN == 0 )//下降沿触发
+//            {
+//                distant_open_trigger_flag = 1;
+//                distant_close_trigger_flag = 0;
+//            }           
+//        }
     }
     
     if(CCF2)
     {
         CCF2 = 0;
-        if(mode == MODE_DISTANT_DIGITAL && PIN_DISTANT_STOP==0)
-        {
-            delay_ms(2);
-            if(PIN_DISTANT_CLOSE == 0)//下降沿触发
-            {
-                distant_close_trigger_flag = 1;
-                distant_open_trigger_flag = 0;
+//        if(mode == MODE_DISTANT_DIGITAL && PIN_DISTANT_STOP==0)
+//        {
+//            delay_ms(2);
+//            if(PIN_DISTANT_CLOSE == 0)//下降沿触发
+//            {
+//                distant_close_trigger_flag = 1;
+//                distant_open_trigger_flag = 0;
 
-            }
+//            }
 
-        }            
+//        }            
         
     }
 

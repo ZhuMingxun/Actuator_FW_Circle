@@ -3,10 +3,17 @@
 #include "uart_debug.h"
 #include "actuator_config.h"
 void main()
-{
-	delay_ms(500);	
-	delay_ms(500);	
+{	
+    #ifdef WATCH_DOG
+    WDT_CONTR = WATCH_DOG_RSTVAL;
+    #endif
+    
+    delay_ms(500);
     LCD_Init();
+    
+    #ifdef WATCH_DOG
+    WDT_CONTR = WATCH_DOG_RSTVAL;
+    #endif
     
     Motor_Config();
     
@@ -15,13 +22,16 @@ void main()
     ADC_Config(); 
 
     MLX90316_SPI_Config();
-
+    #ifdef WATCH_DOG
+    WDT_CONTR = WATCH_DOG_RSTVAL;
+    #endif
+    
     PWMIO_Config();
     Timer0_Config();
     
-#ifdef PHASE_SEQ
-    PhaseSeq_Detect_Config();
-#endif
+    #ifdef PHASE_SEQ
+        PhaseSeq_Detect_Config();
+    #endif
     
     Exti23_Config();
 
@@ -32,6 +42,9 @@ void main()
     
     Detect_ValveInput();
     DataSampInit();
+    #ifdef WATCH_DOG
+    WDT_CONTR = WATCH_DOG_RSTVAL;
+    #endif
     
     while(1)
     {

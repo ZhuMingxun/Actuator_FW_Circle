@@ -120,6 +120,11 @@ void DistantAnalog_Mode()
     DistantAnalogMode_Init();
     while( mode == MODE_DISTANT_ANALOG )
     {
+        
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
+        
         #ifdef TRAVEL_PROTECT_MACHINE
             TravelProtect_Machine();
         #else
@@ -139,10 +144,10 @@ void DistantAnalog_Mode()
             else
             {
                 RemoteAnalog_Control_Adaptive();
-				printf(" -Distant_Control_Adaptive- \r\n");
+				//printf(" -Distant_Control_Adaptive- \r\n");
 
             }
-			printf(" -Distant - \r\n");
+			//printf(" -Distant - \r\n");
         }
 
         if(timer2_60ms_flag == 1)
@@ -435,17 +440,17 @@ void RemoteAnalog_Control_Adaptive()
                     {
                         ctr_stat = CTR_STAT_OPEN;
                         start_pos = pos_real;
-                        printf("\r\nOPEN poserr=%.2f",poserr);
+                        //printf("\r\nOPEN poserr=%.2f",poserr);
                         
                     }
                     else
                     {
                         ctr_stat = CTR_STAT_CLOSE;
                         start_pos = pos_real;
-                        printf("\r\nCLOSE poserr=%.2f",poserr);
+                        //printf("\r\nCLOSE poserr=%.2f",poserr);
                     }
                     
-                    printf("\r\n----vibrate_cnt=%d",(int)vibrate_cnt);
+                    //printf("\r\n----vibrate_cnt=%d",(int)vibrate_cnt);
                     
                     if(input_pos_pre == pPosCTR->pos_input)
                     {
@@ -455,7 +460,7 @@ void RemoteAnalog_Control_Adaptive()
                             if(*p_margin<margin[0])
                             {
                                 p_margin--;
-                                 printf("\r\nCLOSE p_margin=%f",*p_margin);
+                                // printf("\r\nCLOSE p_margin=%f",*p_margin);
                             }
                             vibrate_cnt = 0;
                         }
@@ -509,7 +514,7 @@ void RemoteAnalog_Control_Adaptive()
 				ctr_stat = CTR_END;
                 stop_pos = pos_real;
             }
-            printf("\r\nctr_stat=OPEN  pos_input=%.2f  pos_real=%.2f  poserr=%.2f  p_margin=%.2f",pPosCTR->pos_input,pos_real,poserr,*p_margin);
+            //printf("\r\nctr_stat=OPEN  pos_input=%.2f  pos_real=%.2f  poserr=%.2f  p_margin=%.2f",pPosCTR->pos_input,pos_real,poserr,*p_margin);
             //printf("\r\n OPEN RELAY_ON=%d phase_seq = %d POS_REV = %d RELAY_A=%d RELAY_B=%d \r\n",(int)RELAY_ON,(int)phase_seq,(int)POS_REV,(int)RELAY_A,(int)RELAY_B);
             break;
         }
@@ -541,7 +546,7 @@ void RemoteAnalog_Control_Adaptive()
 				ctr_stat = CTR_END;
                 stop_pos = pos_real;
             } 
-            printf("\r\nctr_stat=CLOSE  pos_input=%.2f  pos_real=%.2f  poserr=%.2f  p_margin=%.2f",pPosCTR->pos_input,pos_real,poserr,*p_margin);
+            //printf("\r\nctr_stat=CLOSE  pos_input=%.2f  pos_real=%.2f  poserr=%.2f  p_margin=%.2f",pPosCTR->pos_input,pos_real,poserr,*p_margin);
             //printf("\r\n RELAY_ON=%d phase_seq = %d POS_REV = %d RELAY_A=%d RELAY_B=%d \r\n",(int)RELAY_ON,(int)phase_seq,(int)POS_REV,(int)RELAY_A,(int)RELAY_B);
             break;
         }
@@ -558,13 +563,13 @@ void RemoteAnalog_Control_Adaptive()
                 if(fabs(start_pos-stop_pos)>5)
                 {
                     interia = fabs(stop_pos-pos_real);
-                    printf("\r\nctr_stat=END ,pos_input=%.2f, pos_real=%.2f, poserr=%.2f, p_margin=%.2f, interia=%.2f",pPosCTR->pos_input,pos_real,poserr,*p_margin,interia);
+                    //printf("\r\nctr_stat=END ,pos_input=%.2f, pos_real=%.2f, poserr=%.2f, p_margin=%.2f, interia=%.2f",pPosCTR->pos_input,pos_real,poserr,*p_margin,interia);
 
                     interia = GetInertiaAvr(interia);
-                    printf("\r\nNew interia=%.2f",interia);
+                    //printf("\r\nNew interia=%.2f",interia);
                     
                     SeclectBestMargin(&p_margin,interia);
-                    printf("\r\nNew_Margin=%.2f\r\n",*p_margin);
+                    //printf("\r\nNew_Margin=%.2f\r\n",*p_margin);
                     
                     if(*p_margin != pSystemParam->margin)
                     {
@@ -593,21 +598,21 @@ void RemoteAnalog_Control_Adaptive()
             if(!close0_flag && pPosCTR->pos_input<1.0)
             {
                 MotorClose_Control();
-                printf("\r\n FULL CLOSE !");
+               // printf("\r\n FULL CLOSE !");
                 
             }
             #else
             if(pos_real>0 && !close0_flag && pPosCTR->pos_input<1.0)
             {
                 MotorClose_Control();
-                printf("\r\n FULL CLOSE !");
+               // printf("\r\n FULL CLOSE !");
             }
             #endif
             else
             {
                 Motor_Stop();
                 ctr_stat = CTR_STAT_STANDBY;
-                printf("\r\n FULL CLOSE To Standby !");
+               // printf("\r\n FULL CLOSE To Standby !");
             }
       // printf("\r\n FULLCLOSE phase_seq = %d POS_REV = %d RELAY_A=%d RELAY_B=%d \r\n",(int)phase_seq,(int)POS_REV,(int)RELAY_A,(int)RELAY_B);
                 
@@ -624,20 +629,20 @@ void RemoteAnalog_Control_Adaptive()
             if(!open100_flag && pPosCTR->pos_input>99.0)
             {
                 MotorOpen_Control();
-               printf("\r\n FULL OPEN !");
+             //  printf("\r\n FULL OPEN !");
             }
             #else
             if(pos_real<100 && !open100_flag && pPosCTR->pos_input>99.0)
             {
                 MotorOpen_Control();
-               printf("\r\n FULL OPEN !");
+               //printf("\r\n FULL OPEN !");
             }
             #endif
             else
             {
                 Motor_Stop();
                 ctr_stat = CTR_STAT_STANDBY;
-                printf("\r\n FULL OPEN To Standby !");
+               // printf("\r\n FULL OPEN To Standby !");
             }
         //printf("\r\n FULLOPEN RELAY_ON=%d phase_seq = %d POS_REV = %d RELAY_A=%d RELAY_B=%d \r\n",(int)RELAY_ON,(int)phase_seq,(int)POS_REV,(int)RELAY_A,(int)RELAY_B);
             break;
@@ -646,7 +651,7 @@ void RemoteAnalog_Control_Adaptive()
         default:
 		{
 			ctr_stat = CTR_STAT_STANDBY;
-            printf("\r\n Default To Standby !");
+           // printf("\r\n Default To Standby !");
 			break;
 		}
 		

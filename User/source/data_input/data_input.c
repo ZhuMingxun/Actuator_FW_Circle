@@ -163,23 +163,23 @@ float   Get_Va(const DataADC_TypeDef* padc,const DataVoltage_TypeDef* pvoltage)
     return va_tmp;
     
 }
-float   Get_Vi(const DataADC_TypeDef* padc, const DataVoltage_TypeDef* pvoltage)
-{
-    float vi_tmp;
+//float   Get_Vi(const DataADC_TypeDef* padc, const DataVoltage_TypeDef* pvoltage)
+//{
+//    float vi_tmp;
 
-    vi_tmp = (pvoltage->voltage_vcc * padc->adcvalue_input_filtered) / 1024.0;
-    return vi_tmp;
-}
+//    vi_tmp = (pvoltage->voltage_vcc * padc->adcvalue_input_filtered) / 1024.0;
+//    return vi_tmp;
+//}
 
 
-float Get_InputCurrent(const DataVoltage_TypeDef* pvoltage,const SystemParameter_TypeDef* psystem)
-{
-    float current_temp;
-    
-    current_temp = (pvoltage->voltage_input * 1000.0 / psystem->res_input); // xx.xxxxx mA
-    if(current_temp<1.0)    return 0.0;
-    else return current_temp; 
-}
+//float Get_InputCurrent(const DataVoltage_TypeDef* pvoltage,const SystemParameter_TypeDef* psystem)
+//{
+//    float current_temp;
+//    
+//    current_temp = (pvoltage->voltage_input * 1000.0 / psystem->res_input); // xx.xxxxx mA
+//    if(current_temp<1.0)    return 0.0;
+//    else return current_temp; 
+//}
 
 //计算实时阀门开度
 extern signed char zero_flag;
@@ -372,9 +372,12 @@ void DataSampInit()
     u8 i;
     for(i=0;i<100;i++)
     {
-			  delay_ms(20);
+	    delay_ms(20);
         Acquire_Data();
         Update_InputCurrent(); 
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
     }
     
     

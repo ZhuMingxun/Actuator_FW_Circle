@@ -8,10 +8,11 @@
 #include "uart_debug.h"
 #include "delay.h"
 #include "motor.h"
+#include <stdio.h>
+#include "actuator_config.h"
 
-
-static PhaseSeq_Type data  phaseseq_status;//枚举变量，相序状态
-static data CapSeq_TypeDef Cap_Seq;//序列捕获结构体
+volatile PhaseSeq_Type phaseseq_status;//枚举变量，相序状态
+volatile CapSeq_TypeDef Cap_Seq;//序列捕获结构体
 bit phase_seq = 1;
 u8 phase_update_ok=0;
 /*************************INT0,INT1 配置********************************/
@@ -28,23 +29,25 @@ static void PhsaeSeqIO_Config()
     
 }
 
-static void CapSeq_Init(CapSeq_TypeDef* pCapSeq)
+static void CapSeq_Init()
 {
-    pCapSeq->cap_sequence = 0;
-    pCapSeq->cap_cnt = 0;
-    pCapSeq->capok_flag = 0;
-    EX0 = 1;
-    EX1 = 1;
+    Cap_Seq.cap_sequence = 0;
+    Cap_Seq.cap_cnt = 0;
+    Cap_Seq.capok_flag = 0;
+
 }
 
 /*************相序检测初始化配置**************/
 void PhaseSeq_Detect_Config()
 {
     PhsaeSeqIO_Config();
-    CapSeq_Init(&Cap_Seq); 
+    CapSeq_Init(); 
     phase_update_ok = 0;
     while(phase_update_ok !=1)
     {
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
         PhaseSeq_Update();
     }
 }
@@ -95,7 +98,7 @@ void PhaseSeq_Update()//主函数执行
             default:
             {
                 err_cnt++;
-                if(err_cnt>=10)
+                if(err_cnt>=15)
                 {
                     err_cnt = 0;
                     phaseseq_status = PHASESEQ_LACK;
@@ -108,8 +111,9 @@ void PhaseSeq_Update()//主函数执行
             }
         }
         
-        
-        //CapSeq_Init(&Cap_Seq);
+        EX0 = 1;
+        EX1 = 1;
+       // CapSeq_Init(&Cap_Seq);
     }
 }
 
@@ -122,18 +126,28 @@ void LackPhase_Mode()
     LCD_YELLOW_ON
     ERR_OUT
     Motor_Stop();
+    
+
+    
     while(mode == MODE_LACK_PHASE)
     {
+        #ifdef WATCH_DOG
+        WDT_CONTR = WATCH_DOG_RSTVAL;
+        #endif
+        
         if(timer2_200ms_flag == 1)
         {
             timer2_200ms_flag = 0;
             PhaseSeq_Update();
-            if(phaseseq_status != PHASESEQ_LACK)    break;
+            if(phaseseq_status != PHASESEQ_LACK)    
+                break;
             
         }
+        
         if(timer2_500ms_flag == 1)
         {
             timer2_500ms_flag = 0;
+            
             if(ep_on)
             {
                 Clear_Alarm_DIS();
@@ -155,28 +169,28 @@ void LackPhase_Mode()
 
 /************相序捕获函数*****************/
 /* description:负责填充捕获的序列    */
-static void PhaseSeq_Cap_A(CapSeq_TypeDef* pCapSeq,u8 capvalue)//放在外部中断里
+void PhaseSeq_Cap_A(u8 capvalue)//放在外部中断里
 {
-    pCapSeq->cap_sequence <<= 2;
-    pCapSeq->cap_sequence |= (capvalue & 0x03);
-    pCapSeq->cap_cnt++;
-    if(pCapSeq->cap_cnt >= 6)//采集满一个周期的序列，标志置1，关闭中断不再采集
+    Cap_Seq.cap_sequence <<= 2;
+    Cap_Seq.cap_sequence |= (capvalue & 0x03);
+    Cap_Seq.cap_cnt++;
+    if(Cap_Seq.cap_cnt >= 6)//采集满一个周期的序列，标志置1，关闭中断不再采集
     {
-        pCapSeq->cap_cnt = 0;
-        pCapSeq->capok_flag = 1;
+        Cap_Seq.cap_cnt = 0;
+        Cap_Seq.capok_flag = 1;
         EX0 = 0;
         EX1 = 0;
     }   
 }
-static void PhaseSeq_Cap_B(CapSeq_TypeDef* pCapSeq,u8 capvalue)//放在外部中断里
+void PhaseSeq_Cap_B(u8 capvalue)//放在外部中断里
 {
-    pCapSeq->cap_sequence <<= 2;
-    pCapSeq->cap_sequence |= (capvalue & 0x03);
-    pCapSeq->cap_cnt++;
-    if(pCapSeq->cap_cnt >= 6)//采集满一个周期的序列，标志置1，关闭中断不再采集
+    Cap_Seq.cap_sequence <<= 2;
+    Cap_Seq.cap_sequence |= (capvalue & 0x03);
+    Cap_Seq.cap_cnt++;
+    if(Cap_Seq.cap_cnt >= 6)//采集满一个周期的序列，标志置1，关闭中断不再采集
     {
-        pCapSeq->cap_cnt = 0;
-        pCapSeq->capok_flag = 1;
+        Cap_Seq.cap_cnt = 0;
+        Cap_Seq.capok_flag = 1;
         EX0 = 0;
         EX1 = 0;
     }   
@@ -188,7 +202,7 @@ void Ext_INT0 (void) interrupt INT0_VECTOR
     u8  value_cap;
     EA = 0;
     value_cap = (P3 & 0x0c)>>2;
-    PhaseSeq_Cap_A(&Cap_Seq,value_cap);
+    PhaseSeq_Cap_A(value_cap);
     EA = 1;
 
 }
@@ -199,7 +213,7 @@ void Ext_INT1 (void) interrupt INT1_VECTOR
     u8  value_cap;
     EA = 0;
     value_cap = (P3 & 0x0c)>>2;
-    PhaseSeq_Cap_B(&Cap_Seq,value_cap);
+    PhaseSeq_Cap_B(value_cap);
     EA = 1;
     
 }

@@ -109,45 +109,45 @@ u16 Average_Process()
     
 }
 
-u16 RemoveJumpData_Valve(u16 dat)
-{
-    u16 curdata;
-    static u16 predata;
-    static u8 jumpcnt = 0;
-    static u8 first_flag = 1;
-    
-    curdata = dat;
-    if(first_flag == 1)
-    {
-        predata = curdata;
-        jumpcnt = 0;
-        first_flag = 0;
-        return curdata;//第一次取当前数据并更新前一个数据
-    }
-    else
-    {
-        if(abs(curdata-predata)>=5 )
-        {
-            jumpcnt++;
-            if(jumpcnt<3) 
-            {
-                return predata;//偶然跳变，取前一个数据
-            }
-            else 
-            {
-                jumpcnt = 0;
-                predata = curdata;
-                return curdata;//长时间跳变，取当前数据并更新前一个数据
-            }
-        }
-        else
-        {
-            jumpcnt = 0;
-            predata = curdata; 
-            return curdata;//不跳变，取当前数据并更新前一个数据
-        }
-    }  
-}
+//u16 RemoveJumpData_Valve(u16 dat)
+//{
+//    u16 curdata;
+//    static u16 predata;
+//    static u8 jumpcnt = 0;
+//    static u8 first_flag = 1;
+//    
+//    curdata = dat;
+//    if(first_flag == 1)
+//    {
+//        predata = curdata;
+//        jumpcnt = 0;
+//        first_flag = 0;
+//        return curdata;//第一次取当前数据并更新前一个数据
+//    }
+//    else
+//    {
+//        if(abs(curdata-predata)>=5 )
+//        {
+//            jumpcnt++;
+//            if(jumpcnt<3) 
+//            {
+//                return predata;//偶然跳变，取前一个数据
+//            }
+//            else 
+//            {
+//                jumpcnt = 0;
+//                predata = curdata;
+//                return curdata;//长时间跳变，取当前数据并更新前一个数据
+//            }
+//        }
+//        else
+//        {
+//            jumpcnt = 0;
+//            predata = curdata; 
+//            return curdata;//不跳变，取当前数据并更新前一个数据
+//        }
+//    }  
+//}
 u16 RemoveJumpData_Encoder(u16 dat)
 {
     u16 curdata;

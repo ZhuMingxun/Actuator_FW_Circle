@@ -75,7 +75,7 @@ void LCD_Init()
     HT1621B_WriteCommand(SYSTEM_ON);        
     HT1621B_WriteCommand(LCD_ON);
     LCD_ClearDisplay();
-    //LCD_FullDisplay();
+    LCD_FullDisplay();
 }
 
 /************************************************************************************

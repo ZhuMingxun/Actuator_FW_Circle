@@ -198,7 +198,6 @@ void MotorStop_Delay_60ms()
 /* 行程保护函数 */
 void TravelProtect()
 {
-    
     float opening = pData_Acquire->opening;
     
     switch(motor_status)
@@ -438,79 +437,79 @@ void Torque_Detect()
 
 }
 
-void CloseDir_Protect()
-{
-	static u16 value_pre;
-	static int delta1,delta2,delta3;
-	signed char closedir = pSystemParam->close_dir;
-	
+//void CloseDir_Protect()
+//{
+//	static u16 value_pre;
+//	static int delta1,delta2,delta3;
+//	signed char closedir = pSystemParam->close_dir;
+//	
 
-	switch(motor_status)
-	{
-		case MOTOR_STATUS_STOP:
-		{
-			delta1 = 0;
-			delta2 = 0;
-			delta3 = 0;
+//	switch(motor_status)
+//	{
+//		case MOTOR_STATUS_STOP:
+//		{
+//			delta1 = 0;
+//			delta2 = 0;
+//			delta3 = 0;
 
-			break;
-		}
-		
-		case MOTOR_STATUS_CLOSE:
-		{
+//			break;
+//		}
+//		
+//		case MOTOR_STATUS_CLOSE:
+//		{
 
-			delta1 = delta2;
-			delta2 = delta3;
-			delta3 = pData_ADC->adcvalue_encoder - value_pre;
-			
-			if(delta1>0 && delta2>0 && delta3>0)
-			{
-				closedir = 1;//
-			}
-			if(delta1<0 && delta2<0 && delta3<0)
-			{
-				closedir = -1;//
-			}	
+//			delta1 = delta2;
+//			delta2 = delta3;
+//			delta3 = pData_ADC->adcvalue_encoder - value_pre;
+//			
+//			if(delta1>0 && delta2>0 && delta3>0)
+//			{
+//				closedir = 1;//
+//			}
+//			if(delta1<0 && delta2<0 && delta3<0)
+//			{
+//				closedir = -1;//
+//			}	
 
-			break;
-		}
-		
-		case MOTOR_STATUS_OPEN:
-		{
+//			break;
+//		}
+//		
+//		case MOTOR_STATUS_OPEN:
+//		{
 
-			delta1 = delta2;
-			delta2 = delta3;
-			delta3 = pData_ADC->adcvalue_encoder - value_pre;
-			
-			if(delta1>0 && delta2>0 && delta3>0)
-			{
-				closedir = -1;//
-			}
-			if(delta1<0 && delta2<0 && delta3<0)
-			{
-				closedir = 1;//
-			}
+//			delta1 = delta2;
+//			delta2 = delta3;
+//			delta3 = pData_ADC->adcvalue_encoder - value_pre;
+//			
+//			if(delta1>0 && delta2>0 && delta3>0)
+//			{
+//				closedir = -1;//
+//			}
+//			if(delta1<0 && delta2<0 && delta3<0)
+//			{
+//				closedir = 1;//
+//			}
 
-			break;
-		}
-		default:
-		{
-			delta1 = 0;
-			delta2 = 0;
-			delta3 = 0;
-			break;
-		}
-	}
-	
-	if(closedir != pSystemParam->close_dir)
-	{
-		torquelock_close_flag = 1;
-		Motor_Stop();
-	}
+//			break;
+//		}
+//		default:
+//		{
+//			delta1 = 0;
+//			delta2 = 0;
+//			delta3 = 0;
+//			break;
+//		}
+//	}
+//	
+//	if(closedir != pSystemParam->close_dir)
+//	{
+//		torquelock_close_flag = 1;
+//		Motor_Stop();
+//	}
 
-	value_pre = pData_ADC->adcvalue_encoder;
-	
-}
+//	value_pre = pData_ADC->adcvalue_encoder;
+//	
+//}
 
 /* 电位器报警检测函数 */
 void MotorErr_Detect()
@@ -658,25 +657,25 @@ void IntegAlarm()
     
 }
 
-void MotorVel_Detect()
-{
-    static u16 preadc;
-    u16 curadc;
-    static u8 first_flag = 1;
-    float motorvel;
-    
-    curadc = pData_ADC->adcvalue_valve_filtered;
-    
-    if(first_flag == 1)
-    {
-        preadc = curadc;     
-        first_flag = 0;
-    }
-    
-    motorvel = (float)(((float)curadc - (float)preadc)/0.5f);
-    preadc = curadc;
-    pData_Acquire->motor_vel = motorvel;   
-}
+//void MotorVel_Detect()
+//{
+//    static u16 preadc;
+//    u16 curadc;
+//    static u8 first_flag = 1;
+//    float motorvel;
+//    
+//    curadc = pData_ADC->adcvalue_valve_filtered;
+//    
+//    if(first_flag == 1)
+//    {
+//        preadc = curadc;     
+//        first_flag = 0;
+//    }
+//    
+//    motorvel = (float)(((float)curadc - (float)preadc)/0.5f);
+//    preadc = curadc;
+//    pData_Acquire->motor_vel = motorvel;   
+//}
 
 
 

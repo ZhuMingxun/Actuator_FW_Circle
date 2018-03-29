@@ -25,22 +25,22 @@ void	UART_config(void)
 
 }
 
-void DebugPrintf()
-{ 
-    #ifdef DEBUG
+//void DebugPrintf()
+//{ 
+//    #ifdef DEBUG
 
-    //u16 adc1 = pData_ADC->adcvalue_input;
-    //float adcf1 = pData_Voltage->voltage_input;
-    //float current = pData_Acquire->current_input;
-    //u16 curin16 = cur_in*1000;
-    //float vol = pData_Voltage->voltage_input;
-    
-    //printf("InputRes: %f,OutputRes: %f \r\n",pSystemParam->res_input,pSystemParam->res_output);
-    //printf("use encoder : %d\r\n",use_encoder_flag);
-    #endif   
-    
-    
-}
+//    //u16 adc1 = pData_ADC->adcvalue_input;
+//    //float adcf1 = pData_Voltage->voltage_input;
+//    //float current = pData_Acquire->current_input;
+//    //u16 curin16 = cur_in*1000;
+//    //float vol = pData_Voltage->voltage_input;
+//    
+//    //printf("InputRes: %f,OutputRes: %f \r\n",pSystemParam->res_input,pSystemParam->res_output);
+//    //printf("use encoder : %d\r\n",use_encoder_flag);
+//    #endif   
+//    
+//    
+//}
 
 char putchar (char c)   
 {        
