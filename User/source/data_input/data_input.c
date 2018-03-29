@@ -263,8 +263,11 @@ float Get_RealimeOpening(const DataADC_TypeDef*padc,const SystemParameter_TypeDe
         x = (float)(padc->adcvalue_valve_filtered);
         if((x1-x)*(x1-x2)<=0)   return 0.0;
         if((x2-x)*(x2-x1)<=0)   return 1.0;
-			  opening_tmp = (x-x1) / (x2-x1);
-				return opening_tmp;
+        opening_tmp = (x-x1) / (x2-x1);
+        
+        opening_tmp = (float)((u8)(opening_tmp*100))/100.0;//保留两位小数
+        
+        return opening_tmp;
     }
     
 
@@ -291,7 +294,7 @@ void Acquire_Data()
 
     
     //pData_Voltage->voltage_vcc   =  Get_Vcc(pData_ADC);
-    pData_Voltage->voltage_vcc  = 4.970675;
+    pData_Voltage->voltage_vcc  = 5.0;
     pData_Voltage->voltage_valve =  Get_Va(pData_ADC,pData_Voltage);
 
     pData_Acquire->opening        =  Get_RealimeOpening(pData_ADC,pSystemParam);

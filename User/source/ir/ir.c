@@ -218,8 +218,8 @@ void IR_Update()
 // ·µ»Ø: none.
 // 
 //========================================================================
-extern u8 distant_open_trigger_flag;
-extern u8 distant_close_trigger_flag;
+//extern u8 distant_open_trigger_flag;
+//extern u8 distant_close_trigger_flag;
 void	PCA_Handler (void) interrupt PCA_VECTOR
 {
      

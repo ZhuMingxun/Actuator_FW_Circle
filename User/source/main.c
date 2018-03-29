@@ -22,6 +22,7 @@ void main()
     ADC_Config(); 
 
     MLX90316_SPI_Config();
+    
     #ifdef WATCH_DOG
     WDT_CONTR = WATCH_DOG_RSTVAL;
     #endif
@@ -42,6 +43,7 @@ void main()
     
     Detect_ValveInput();
     DataSampInit();
+    
     #ifdef WATCH_DOG
     WDT_CONTR = WATCH_DOG_RSTVAL;
     #endif

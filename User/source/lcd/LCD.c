@@ -19,6 +19,9 @@
 #include "control_new.h"
 #include "LCD.h"
 #include "local.h"
+
+#include "actuator_config.h"
+
 /************************************************************************************
                                    º¯ÊıÉùÃ÷
 ************************************************************************************/
@@ -755,11 +758,20 @@ void LCD_DIS()
         f_data = pData_Acquire->opening;
         RealTime_Opening_DIS(f_data); 
 
-        f_data = pData_Acquire->current_input;
-        InputCurrent_DIS(f_data); 
-
         f_data = pData_Acquire->current_output;
         OutputCurrent_DIS(f_data); 
+        
+        #ifdef KAIGUAN_MODE
+        //f_data = pData_Acquire->current_input;
+        InputCurrent_DIS(0.0);
+        #else
+        f_data = pData_Acquire->current_input;
+        InputCurrent_DIS(f_data);
+        #endif        
+        
+        
+        
+        
     }
 
 }

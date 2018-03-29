@@ -17,9 +17,18 @@
 #include "uart_debug.h"
 #include <stdio.h>
 #include "actuator_config.h"
+
+
+/* 远方开关控制器状态 停、开、关 */
+#define RMTKEYCTR_STAT_STOP     0
+#define RMTKEYCTR_STAT_OPEN     1
+#define RMTKEYCTR_STAT_CLOSE    2
+
+static u8 keyctr_stat = RMTKEYCTR_STAT_STOP;
+
 volatile DistantCmd_Type distant_cmd = DISTANT_CMD_STOP;
-u8 distant_open_trigger_flag = 0;//远方开触发标志
-u8 distant_close_trigger_flag = 0;//远方关触发标志
+//u8 distant_open_trigger_flag = 0;//远方开触发标志
+//u8 distant_close_trigger_flag = 0;//远方关触发标志
 
 u8 Remote_KeyScan();
 void Remote_KeyControl();
@@ -52,8 +61,7 @@ void DistantDigital_Init()
     Motor_Stop();
     distant_cmd = DISTANT_CMD_STOP;
     ERR_OFF
-	distant_open_trigger_flag = 0;
-	distant_close_trigger_flag = 0;
+    keyctr_stat = RMTKEYCTR_STAT_STOP;
     Distant_PCA_Config(); 
     IR_Disable();
     LCD_YELLOW_ON
@@ -62,6 +70,7 @@ void DistantDigital_Init()
 void DistantDigital_Mode()
 {
     DistantDigital_Init();
+    
     while(mode==MODE_DISTANT_DIGITAL)
     {
         
@@ -95,7 +104,6 @@ void DistantDigital_Mode()
             Torque_Detect();//力矩检测
             LimitPosition_Output();
             Update_InputCurrent(); 
-            //DistantDigital_Control2();
             Remote_KeyControl();
             LCD_DIS();
             PWM_Update();    
@@ -105,11 +113,13 @@ void DistantDigital_Mode()
         {
             timer2_200ms_flag = 0; 
             SystemMode_Detect();//远方现场模式检测
-            if(mode == MODE_LOCAL || mode == MODE_DISTANT_ANALOG)   break;
+            if(mode == MODE_LOCAL || mode == MODE_DISTANT_ANALOG)   
+                break;
 
             #ifdef PHASE_SEQ
             PhaseSeq_Update();
-            if(mode == MODE_LACK_PHASE)    break;      
+            if(mode == MODE_LACK_PHASE)    
+                break;      
             #endif
             
         }
@@ -127,115 +137,11 @@ void DistantDigital_Mode()
             timer_1s_flag = 0;
             MotorErr_Detect();
             //printf("  \r\n -Distant Digital- ");
-            //Set_InputLowHigh_Detect();
         }
-        
-        
-    }
-     
+    } 
 }
 
-
-
-/**************远方数字控制函数******************/
-//void DistantDigital_Control()
-//{
-//    
-//    if(PIN_LOSE_OPEN & PIN_LOSE_CLOSE)
-//    {
-//        if(distant_trigger_flag == 0)
-//        {
-//            distant_cmd = DISTANT_CMD_STOP;
-//        }
-//        if(PIN_DISTANT_STOP == 0)
-//        {
-//            if(distant_trigger_flag == 0)   distant_trigger_flag = 1;
-//            distant_cmd = DISTANT_CMD_STOP;
-//        }            
-//    }
-//    else
-//    {
-//        if(distant_trigger_flag != 0) distant_trigger_flag = 0;  
-//        if(PIN_LOSE_OPEN == 0)  distant_cmd = DISTANT_CMD_OPEN;
-//        if(PIN_LOSE_CLOSE == 0) distant_cmd = DISTANT_CMD_CLOSE;    
-//    }
-//         
-//    switch(distant_cmd)
-//    {
-//        case DISTANT_CMD_STOP:  Motor_Stop();break;
-//        case DISTANT_CMD_OPEN:  MotorOpen_Control();break;
-//        case DISTANT_CMD_CLOSE: MotorClose_Control();break;
-//        default:break;
-//    }    
-//                    
-//}
-
-//远方 点动，保持控制
-//void DistantDigital_Control2()
-//{
-//	if(PIN_LOSE_OPEN & PIN_LOSE_CLOSE)//丢信保持
-//	{
-//		if(PIN_DISTANT_STOP==0)//自锁
-//		{
-//			if(distant_open_trigger_flag==1 && distant_close_trigger_flag==0)
-//			{
-//				distant_cmd = DISTANT_CMD_OPEN;
-//			}
-//			else if(distant_open_trigger_flag==0 && distant_close_trigger_flag==1)
-//			{
-//				distant_cmd = DISTANT_CMD_CLOSE;
-//			}
-//			else
-//			{
-//				distant_cmd = DISTANT_CMD_STOP;
-//			}		
-
-//		}
-//		else//点动
-//		{
-//			/* 清空自锁标志 */
-//			distant_open_trigger_flag = 0;
-//			distant_close_trigger_flag = 0;	
-//			
-//			if(PIN_DISTANT_OPEN==0 && PIN_DISTANT_CLOSE==1)
-//			{
-//				delay_ms(10);//延时抗干扰
-//				if(PIN_DISTANT_OPEN==0 && PIN_DISTANT_CLOSE==1)
-//					distant_cmd = DISTANT_CMD_OPEN;
-//			}
-//			else if(PIN_DISTANT_OPEN==1 && PIN_DISTANT_CLOSE==0)
-//			{
-//				delay_ms(10);//延时抗干扰
-//				if(PIN_DISTANT_OPEN==1 && PIN_DISTANT_CLOSE==0)
-//					distant_cmd = DISTANT_CMD_CLOSE;
-//			}
-//			else
-//			{
-//				distant_cmd = DISTANT_CMD_STOP;
-//			}
-//			
-//		}
-
-//	
-//	}
-//	else//丢信开，丢信关
-//	{
-//        if(PIN_LOSE_OPEN == 0)  distant_cmd = DISTANT_CMD_OPEN;
-//        if(PIN_LOSE_CLOSE == 0) distant_cmd = DISTANT_CMD_CLOSE;  
-//	}
-//	
-//	/* 执行控制命令 */
-//    switch(distant_cmd)
-//    {
-//        case DISTANT_CMD_STOP:  Motor_Stop();break;
-//        case DISTANT_CMD_OPEN:  MotorOpen_Control();break;
-//        case DISTANT_CMD_CLOSE: MotorClose_Control();break;
-//        default:break;
-//    }  
-//}
-
 //===========================改进按键控制2018.3.28==============================
-
 /* 按键值宏定义 - 保持 */
 #define RMTKEY_KEEP_ERR     (0x00)//开关同时按下
 #define RMTKEY_KEEP_OPEN    (0x01)
@@ -246,11 +152,6 @@ void DistantDigital_Mode()
 #define RMTKEY_INCHING_OPEN     (0x05)
 #define RMTKEY_INCHING_CLOSE    (0x06)
 #define RMTKEY_INCHING_NONE     (0x07)
-
-/* 远方开关控制器状态 停、开、关 */
-#define RMTKEYCTR_STAT_STOP     0
-#define RMTKEYCTR_STAT_OPEN     1
-#define RMTKEYCTR_STAT_CLOSE    2
 
 /*远方开关量扫描检测
 *返回值：按键值
@@ -288,7 +189,6 @@ u8 Remote_KeyScan()
 */
 u8 RemoteKey_State_Keep(u8 value)
 {
-    static u8 keyctr_stat = RMTKEYCTR_STAT_STOP;
     u8 keyval;
     
     keyval = value;
@@ -343,7 +243,6 @@ u8 RemoteKey_State_Keep(u8 value)
 */
 u8 RemoteKey_State_Inching(u8 value)
 {
-    static u8 keyctr_stat = RMTKEYCTR_STAT_STOP;
     u8 keyval;
     
     keyval = value;
@@ -453,7 +352,102 @@ void Remote_KeyControl()
 
 
 
+/**************远方数字控制函数******************/
+//void DistantDigital_Control()
+//{
+//    
+//    if(PIN_LOSE_OPEN & PIN_LOSE_CLOSE)
+//    {
+//        if(distant_trigger_flag == 0)
+//        {
+//            distant_cmd = DISTANT_CMD_STOP;
+//        }
+//        if(PIN_DISTANT_STOP == 0)
+//        {
+//            if(distant_trigger_flag == 0)   distant_trigger_flag = 1;
+//            distant_cmd = DISTANT_CMD_STOP;
+//        }            
+//    }
+//    else
+//    {
+//        if(distant_trigger_flag != 0) distant_trigger_flag = 0;  
+//        if(PIN_LOSE_OPEN == 0)  distant_cmd = DISTANT_CMD_OPEN;
+//        if(PIN_LOSE_CLOSE == 0) distant_cmd = DISTANT_CMD_CLOSE;    
+//    }
+//         
+//    switch(distant_cmd)
+//    {
+//        case DISTANT_CMD_STOP:  Motor_Stop();break;
+//        case DISTANT_CMD_OPEN:  MotorOpen_Control();break;
+//        case DISTANT_CMD_CLOSE: MotorClose_Control();break;
+//        default:break;
+//    }    
+//                    
+//}
 
+//远方 点动，保持控制
+//void DistantDigital_Control2()
+//{
+//	if(PIN_LOSE_OPEN & PIN_LOSE_CLOSE)//丢信保持
+//	{
+//		if(PIN_DISTANT_STOP==0)//自锁
+//		{
+//			if(distant_open_trigger_flag==1 && distant_close_trigger_flag==0)
+//			{
+//				distant_cmd = DISTANT_CMD_OPEN;
+//			}
+//			else if(distant_open_trigger_flag==0 && distant_close_trigger_flag==1)
+//			{
+//				distant_cmd = DISTANT_CMD_CLOSE;
+//			}
+//			else
+//			{
+//				distant_cmd = DISTANT_CMD_STOP;
+//			}		
+
+//		}
+//		else//点动
+//		{
+//			/* 清空自锁标志 */
+//			distant_open_trigger_flag = 0;
+//			distant_close_trigger_flag = 0;	
+//			
+//			if(PIN_DISTANT_OPEN==0 && PIN_DISTANT_CLOSE==1)
+//			{
+//				delay_ms(10);//延时抗干扰
+//				if(PIN_DISTANT_OPEN==0 && PIN_DISTANT_CLOSE==1)
+//					distant_cmd = DISTANT_CMD_OPEN;
+//			}
+//			else if(PIN_DISTANT_OPEN==1 && PIN_DISTANT_CLOSE==0)
+//			{
+//				delay_ms(10);//延时抗干扰
+//				if(PIN_DISTANT_OPEN==1 && PIN_DISTANT_CLOSE==0)
+//					distant_cmd = DISTANT_CMD_CLOSE;
+//			}
+//			else
+//			{
+//				distant_cmd = DISTANT_CMD_STOP;
+//			}
+//			
+//		}
+
+//	
+//	}
+//	else//丢信开，丢信关
+//	{
+//        if(PIN_LOSE_OPEN == 0)  distant_cmd = DISTANT_CMD_OPEN;
+//        if(PIN_LOSE_CLOSE == 0) distant_cmd = DISTANT_CMD_CLOSE;  
+//	}
+//	
+//	/* 执行控制命令 */
+//    switch(distant_cmd)
+//    {
+//        case DISTANT_CMD_STOP:  Motor_Stop();break;
+//        case DISTANT_CMD_OPEN:  MotorOpen_Control();break;
+//        case DISTANT_CMD_CLOSE: MotorClose_Control();break;
+//        default:break;
+//    }  
+//}
 
 
 

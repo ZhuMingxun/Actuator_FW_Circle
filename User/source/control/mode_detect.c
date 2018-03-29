@@ -20,7 +20,7 @@ void DistantAnalog_Detect()
     float I_in;
     I_in = pData_Acquire->current_input;
     
-    #ifdef KAIGUNA_MODE
+    #ifdef KAIGUAN_MODE
         mode = MODE_DISTANT_DIGITAL;
     #else
     if(I_in < 3.0f )

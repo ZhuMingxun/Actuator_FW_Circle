@@ -277,7 +277,7 @@ float Butterworth_Filter_Valve(float nowdata)
     u16 temp;
     
     //temp = RemoveJumpData_Valve((u16)nowdata);//È¥Ã«´Ì
-	  temp = Average_Process();
+	temp = Average_Process();
     nowdata = (float)temp;
 
     if(first_flag == 1)

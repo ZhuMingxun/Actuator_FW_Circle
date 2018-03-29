@@ -563,27 +563,21 @@ void RemoteAnalog_Control_Adaptive()
                 if(fabs(start_pos-stop_pos)>5)
                 {
                     interia = fabs(stop_pos-pos_real);
-                    //printf("\r\nctr_stat=END ,pos_input=%.2f, pos_real=%.2f, poserr=%.2f, p_margin=%.2f, interia=%.2f",pPosCTR->pos_input,pos_real,poserr,*p_margin,interia);
 
                     interia = GetInertiaAvr(interia);
-                    //printf("\r\nNew interia=%.2f",interia);
                     
                     SeclectBestMargin(&p_margin,interia);
-                    //printf("\r\nNew_Margin=%.2f\r\n",*p_margin);
                     
                     if(*p_margin != pSystemParam->margin)
                     {
                         pSystemParam->margin = *p_margin;
                         IapWrite_Margin(*p_margin);
                         rd_mar = IapRead_Margin();
-                       // printf("\r\n Read Margin=%.2f",rd_mar);
                     }
                 }
                 ctr_stat = CTR_STAT_STANDBY;
-                //printf("\r\nctr_stat=STANDBY ");
 
 			}
-        //printf("\r\n END RELAY_ON=%d phase_seq = %d POS_REV = %d RELAY_A=%d RELAY_B=%d \r\n",(int)RELAY_ON,(int)phase_seq,(int)POS_REV,(int)RELAY_A,(int)RELAY_B);
 			break;
 		}
         

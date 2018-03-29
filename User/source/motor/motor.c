@@ -85,8 +85,8 @@ void Motor_Config()
     LimitIO_Config();
 }
 
-extern u8 distant_open_trigger_flag;//
-extern u8 distant_close_trigger_flag;//
+//extern u8 distant_open_trigger_flag;//
+//extern u8 distant_close_trigger_flag;//
 void Motor_Stop()
 {
     if(motor_status != MOTOR_STATUS_STOP)
@@ -95,8 +95,7 @@ void Motor_Stop()
         M_STOP
         stop_cnt = 0;
         motordelay_flag = 0;
-		distant_open_trigger_flag = 0;
-		distant_close_trigger_flag = 0;	
+
     }  
 }
 
@@ -209,7 +208,7 @@ void TravelProtect()
 				local_cmd = LOCAL_CMD_STOP;
 				distant_cmd = DISTANT_CMD_STOP;
                 
-                if(opening==0.0)
+                if(opening<=0.0)
                 {
                     //printf("open travel!! opening=0.0 \r\n");
 					_SET_CLOSE_IN_PLACE_FLAG
@@ -219,8 +218,6 @@ void TravelProtect()
                 if(opening<=0.0)
                 {
                     local_stat =  LOCAL_STAT_STOP;
-                    distant_open_trigger_flag = 0;
-                    distant_close_trigger_flag = 0;
                     
                 }
             }
@@ -233,7 +230,7 @@ void TravelProtect()
 				local_cmd = LOCAL_CMD_STOP;
 				distant_cmd = DISTANT_CMD_STOP;
                 //printf("close travel!! \r\n");
-                if(opening==1.0)
+                if(opening>=1.0)
                 {
 					_SET_OPEN_IN_PLACE_FLAG
                     //printf("close travel!! opening=1.0 \r\n");
@@ -243,8 +240,7 @@ void TravelProtect()
                 if(opening>=1.0)
                 {
                     local_stat =  LOCAL_STAT_STOP;
-                    distant_open_trigger_flag = 0;
-                    distant_close_trigger_flag = 0;
+
                 }
             }
             break;
